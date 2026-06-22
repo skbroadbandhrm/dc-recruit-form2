@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DC전기직무 채용 시스템 — SK Broadband</title>
+<title>DC경력채용 시스템 — SK Broadband</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
   :root{
@@ -96,7 +96,7 @@
     <div class="brand-block">
       <div class="brand-mark">DC</div>
       <div class="brand-text">
-        <div class="bt-main">전기직무 채용 시스템</div>
+        <div class="bt-main">DC경력채용 시스템</div>
         <div class="bt-sub">SK BROADBAND</div>
       </div>
     </div>
@@ -127,32 +127,19 @@
 &lt;script&gt;
 (function(){
   const PREFIX = &quot;dc_prescreen:&quot;;
-  const _sb = window.__sb;       // shared supabase client (set after login/init)
-  let _cache = {};               // key -&gt; last fetched row (for list+get pairing)
+  const _sb = window.__sb;
 
   function stripPrefix(key){ return (key||&#x27;&#x27;).indexOf(PREFIX)===0 ? key.slice(PREFIX.length) : key; }
-  function recordToValue(row){
-    // reconstruct the JSON string the existing code expects
-    const rec = Object.assign({}, row.data || {});
-    rec.status = row.status || rec.status || &#x27;사전질문 제출완료&#x27;;
-    if(row.exec_interview_slot) rec.execInterviewSlot = row.exec_interview_slot;
-    rec._key = PREFIX + row.email;
-    return JSON.stringify(rec);
-  }
 
   window.storage = {
-    
-      // Applicant page never reads back (RLS would block anon select anyway).
-      get: async function(){ return null; },
-      list: async function(prefix){ return { keys: [], prefix: prefix, shared: true }; },
-    
+    get: async function(){ return null; },
+    list: async function(prefix){ return { keys: [], prefix: prefix, shared: true }; },
     set: async function(key, value){
       const email = stripPrefix(key);
       let rec;
       try { rec = JSON.parse(value); } catch(e){ rec = {}; }
       const status = rec.status || &#x27;사전질문 제출완료&#x27;;
       const execSlot = rec.execInterviewSlot || &#x27;&#x27;;
-      // strip columns we store separately so they don&#x27;t duplicate inside data
       const dataCopy = Object.assign({}, rec);
       delete dataCopy._key;
       const payload = {
@@ -160,9 +147,11 @@
         data: dataCopy,
         status: status,
         exec_interview_slot: execSlot,
+        position: rec.position || &#x27;전기&#x27;,
+        can_attend: (rec.cannotAttend === true) ? false : true,
+        alt_time_request: rec.altTimeRequest || &#x27;&#x27;,
         updated_at: new Date().toISOString()
       };
-      // upsert on email (insert or overwrite same applicant)
       const { error } = await _sb.from(&#x27;candidates&#x27;).upsert(payload, { onConflict: &#x27;email&#x27; });
       if(error){ console.error(&#x27;Supabase set 실패:&#x27;, error); throw error; }
       return { key: key, value: value, shared: true };
@@ -178,8 +167,9 @@
 
 &lt;meta charset=&quot;UTF-8&quot;&gt;
 &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
-&lt;title&gt;DC전기직무 사전 인터뷰 — SK Broadband&lt;/title&gt;
+&lt;title&gt;DC경력채용 사전 인터뷰 — SK Broadband&lt;/title&gt;
 &lt;style&gt;
+
   @import url(&#x27;https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap&#x27;);
 
   :root{
@@ -560,6 +550,39 @@
     .footer{padding:14px 18px 18px;}
     .intro{padding:32px 18px 18px;}
   }
+
+  /* ===== Position select (intro) ===== */
+  .pos-select{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+  .pos-card{
+    border:1.5px solid var(--line); border-radius:10px; padding:14px 16px;
+    cursor:pointer; transition:border-color .15s, background .15s;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .pos-card:hover{border-color:var(--slate);}
+  .pos-card.selected{border-color:var(--navy); background:rgba(15,27,46,0.04);}
+  .pos-card .pname{font-size:14.5px;font-weight:700;color:var(--ink);}
+  .pos-card .pdesc{font-size:12px;color:var(--slate);margin-top:2px;}
+  .pos-card .pcheck{
+    width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  }
+  .pos-card.selected .pcheck{background:var(--navy);border-color:var(--navy);}
+  .pos-card.selected .pcheck svg{display:block;width:11px;height:11px;}
+  .pos-card .pcheck svg{display:none;}
+
+  /* ===== Attend confirm (schedule replacement) ===== */
+  .attend-deadline{
+    background:rgba(166,67,44,0.08); border:1px solid rgba(166,67,44,0.25); border-radius:10px;
+    padding:12px 14px; font-size:13px; color:var(--warn); font-weight:600; margin-bottom:18px; line-height:1.6;
+  }
+  .attend-choices{display:flex;gap:10px;margin-bottom:16px;}
+  .attend-choices .choice{flex:1;justify-content:center;text-align:center;}
+  .alt-time-block{margin-top:6px;}
+  .alt-time-note{
+    font-size:12.5px; color:var(--slate); line-height:1.6; margin-bottom:10px;
+    background:rgba(61,90,115,0.06); border-radius:8px; padding:10px 12px;
+  }
+
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -570,8 +593,30 @@
   &lt;div class=&quot;screen active&quot; id=&quot;screen-intro&quot;&gt;
     &lt;div class=&quot;intro&quot;&gt;
       &lt;div class=&quot;intro-eyebrow&quot;&gt;SK BROADBAND · DC ENGINEERING&lt;/div&gt;
-      &lt;h1&gt;전기직무 사전 인터뷰&lt;/h1&gt;
-      &lt;p&gt;1차 면접 전, 직무 전문성과 일하는 방식을 미리 확인하는 절차입니다.&lt;br&gt;모든 지원자에게 동일한 질문이 주어지며, 답변은 1차 면접에서 더 깊은 대화를 나누는 자료로 활용됩니다.&lt;/p&gt;
+      &lt;h1&gt;DC경력채용 사전 인터뷰&lt;/h1&gt;
+      &lt;p&gt;1차 면접 전, 직무 전문성과 일하는 방식을 미리 확인하는 절차입니다.&lt;br&gt;지원하신 직무를 선택하면, 해당 직무에 맞는 질문이 제공됩니다.&lt;/p&gt;
+
+      &lt;div class=&quot;attend-deadline&quot; style=&quot;margin-bottom:18px;&quot;&gt;
+        ⏰ 사전응답 제출기한: &lt;b&gt;6월 23일(화) 23:59까지&lt;/b&gt;
+      &lt;/div&gt;
+
+      &lt;div style=&quot;margin-bottom:18px;&quot;&gt;
+        &lt;label style=&quot;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11.5px;color:var(--slate);display:block;margin-bottom:8px;&quot;&gt;지원 직무를 선택해주세요&lt;/label&gt;
+        &lt;div class=&quot;pos-select&quot; id=&quot;pos-select&quot;&gt;
+          &lt;div class=&quot;pos-card&quot; data-pos=&quot;전기&quot; onclick=&quot;selectPosition(&#x27;전기&#x27;)&quot;&gt;
+            &lt;div&gt;&lt;div class=&quot;pname&quot;&gt;전기직무&lt;/div&gt;&lt;div class=&quot;pdesc&quot;&gt;전력설비 설계·시공·시운전·운영&lt;/div&gt;&lt;/div&gt;
+            &lt;div class=&quot;pcheck&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;pos-card&quot; data-pos=&quot;기계&quot; onclick=&quot;selectPosition(&#x27;기계&#x27;)&quot;&gt;
+            &lt;div&gt;&lt;div class=&quot;pname&quot;&gt;기계직무&lt;/div&gt;&lt;div class=&quot;pdesc&quot;&gt;냉각·공조 설계·시운전·운영&lt;/div&gt;&lt;/div&gt;
+            &lt;div class=&quot;pcheck&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;pos-card&quot; data-pos=&quot;시스템&quot; onclick=&quot;selectPosition(&#x27;시스템&#x27;)&quot;&gt;
+            &lt;div&gt;&lt;div class=&quot;pname&quot;&gt;시스템직무&lt;/div&gt;&lt;div class=&quot;pdesc&quot;&gt;IT 인프라·클라우드·운영&lt;/div&gt;&lt;/div&gt;
+            &lt;div class=&quot;pcheck&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
 
       &lt;div class=&quot;meta-grid&quot;&gt;
         &lt;div class=&quot;meta-cell&quot;&gt;
@@ -605,14 +650,14 @@
       &lt;/div&gt;
 
       &lt;button class=&quot;start-btn&quot; onclick=&quot;startFlow()&quot;&gt;응답 시작하기 →&lt;/button&gt;
-      &lt;div id=&quot;intro-error&quot; style=&quot;display:none;color:var(--warn);font-size:12.5px;margin-top:10px;text-align:center;&quot;&gt;성명과 이메일을 입력해주세요.&lt;/div&gt;
+      &lt;div id=&quot;intro-error&quot; style=&quot;display:none;color:var(--warn);font-size:12.5px;margin-top:10px;text-align:center;&quot;&gt;지원 직무, 성명, 이메일을 모두 입력해주세요.&lt;/div&gt;
     &lt;/div&gt;
   &lt;/div&gt;
 
   &lt;!-- ============ TOPBAR (shown from Q1 onward) ============ --&gt;
   &lt;div class=&quot;topbar&quot; id=&quot;topbar&quot; style=&quot;display:none;&quot;&gt;
     &lt;div class=&quot;topbar-row&quot;&gt;
-      &lt;div class=&quot;brand&quot;&gt;DC·E PRE-SCREEN&lt;/div&gt;
+      &lt;div class=&quot;brand&quot; id=&quot;topbar-brand&quot;&gt;DC PRE-SCREEN&lt;/div&gt;
       &lt;div class=&quot;stage-label&quot; id=&quot;stage-label&quot;&gt;SECTION 1 / 직무전문성&lt;/div&gt;
     &lt;/div&gt;
     &lt;div class=&quot;circuit&quot; id=&quot;circuit&quot;&gt;&lt;/div&gt;
@@ -620,92 +665,11 @@
 
   &lt;div class=&quot;body&quot; id=&quot;body-content&quot;&gt;
 
-    &lt;!-- Q1 --&gt;
-    &lt;div class=&quot;screen&quot; data-step=&quot;1&quot;&gt;
-      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 01&lt;/span&gt;
-      &lt;span class=&quot;qnum&quot;&gt;Q1&lt;/span&gt;
-      &lt;h2 class=&quot;qtitle&quot;&gt;가장 최근 수행한 프로젝트명을 적어주세요.&lt;/h2&gt;
-      &lt;p class=&quot;qhint&quot;&gt;지원서에 기재하신 프로젝트 중 하나를 적어주시면 됩니다. (예: 카타르 LNG Project)&lt;/p&gt;
-      &lt;input type=&quot;text&quot; id=&quot;q1-proj-input&quot; maxlength=&quot;40&quot; placeholder=&quot;프로젝트명 입력&quot;&gt;
-    &lt;/div&gt;
-
-    &lt;!-- Q2 --&gt;
-    &lt;div class=&quot;screen&quot; data-step=&quot;2&quot;&gt;
-      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 02&lt;/span&gt;
-      &lt;span class=&quot;qnum&quot;&gt;Q2&lt;/span&gt;
-      &lt;h2 class=&quot;qtitle&quot;&gt;그 프로젝트에서, 본인이 직접 의사결정한 부분과 상급자·타 부서가 결정한 부분을 구분해서 적어주세요.&lt;/h2&gt;
-      &lt;p class=&quot;qhint&quot;&gt;대상 프로젝트: &lt;span class=&quot;var&quot; id=&quot;q2-proj-echo&quot;&gt;—&lt;/span&gt;&lt;/p&gt;
-      &lt;textarea id=&quot;q1-input&quot; rows=&quot;4&quot; maxlength=&quot;120&quot; placeholder=&quot;예: 차단기 용량은 ETAP 해석 결과로 제가 직접 산정했고, 최종 Vendor 선정은 PM 협의로 결정되었습니다.&quot;&gt;&lt;/textarea&gt;
-      &lt;div class=&quot;counter&quot; id=&quot;q1-counter&quot;&gt;0 / 80자 권장&lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;!-- Q3 --&gt;
-    &lt;div class=&quot;screen&quot; data-step=&quot;3&quot;&gt;
-      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 03&lt;/span&gt;
-      &lt;span class=&quot;qnum&quot;&gt;Q3&lt;/span&gt;
-      &lt;h2 class=&quot;qtitle&quot;&gt;같은 프로젝트에서, 가장 어려웠던 기술적 이슈 1개를 구체적 수치나 현상과 함께 적어주세요.&lt;/h2&gt;
-      &lt;p class=&quot;qhint&quot;&gt;대상 프로젝트: &lt;span class=&quot;var&quot; id=&quot;q3-proj-echo&quot;&gt;—&lt;/span&gt;&lt;/p&gt;
-      &lt;textarea id=&quot;q2-input&quot; rows=&quot;4&quot; maxlength=&quot;120&quot; placeholder=&quot;예: 22kV 2회선 무정전 인입 작업 중 절연저항이 기준치(1000MΩ) 이하로 측정되어 케이블 교체가 필요했던 상황&quot;&gt;&lt;/textarea&gt;
-      &lt;div class=&quot;counter&quot; id=&quot;q2-counter&quot;&gt;0 / 80자 권장&lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;!-- Q4 --&gt;
-    &lt;div class=&quot;screen&quot; data-step=&quot;4&quot;&gt;
-      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 04&lt;/span&gt;
-      &lt;span class=&quot;qnum&quot;&gt;Q4&lt;/span&gt;
-      &lt;p class=&quot;qhint&quot;&gt;중복 선택 가능합니다. 실제로 수행해본 업무의 범위만 체크해주세요.&lt;/p&gt;
-      &lt;div class=&quot;choices&quot; id=&quot;q3-choices&quot;&gt;
-        &lt;div class=&quot;choice multi&quot; data-val=&quot;design&quot;&gt;&lt;span class=&quot;check&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;설계 (Design)&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice multi&quot; data-val=&quot;procurement&quot;&gt;&lt;span class=&quot;check&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;구매 / Vendor 기술검토&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice multi&quot; data-val=&quot;construction&quot;&gt;&lt;span class=&quot;check&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;시공관리 (Construction)&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice multi&quot; data-val=&quot;commissioning&quot;&gt;&lt;span class=&quot;check&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;시운전 (FAT / SAT / Cx)&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice multi&quot; data-val=&quot;operation&quot;&gt;&lt;span class=&quot;check&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;운영 (Commissioning 이후)&lt;/span&gt;&lt;/div&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;!-- Q4 --&gt;
-    &lt;div class=&quot;screen&quot; data-step=&quot;5&quot;&gt;
-      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 04&lt;/span&gt;
-      &lt;span class=&quot;qnum&quot;&gt;Q4&lt;/span&gt;
-      &lt;h2 class=&quot;qtitle&quot;&gt;운영 중인 DC에서 무중단이 필수인 전력설비 교체작업을 맡았다면, 가장 먼저 할 일은?&lt;/h2&gt;
-      &lt;p class=&quot;qhint&quot;&gt;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&lt;/p&gt;
-      &lt;div class=&quot;choices&quot; id=&quot;q4-choices&quot;&gt;
-        &lt;div class=&quot;choice&quot; data-val=&quot;A&quot;&gt;&lt;span class=&quot;letter&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;영향범위 시뮬레이션 (부하·전원경로 분석)&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice&quot; data-val=&quot;B&quot;&gt;&lt;span class=&quot;letter&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;백업 경로 사전 확보&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice&quot; data-val=&quot;C&quot;&gt;&lt;span class=&quot;letter&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;관련 부서·고객 사전 공지&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice&quot; data-val=&quot;D&quot;&gt;&lt;span class=&quot;letter&quot;&gt;D&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;작업 매뉴얼(MOP) 재검토&lt;/span&gt;&lt;/div&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;!-- Q5 --&gt;
-    &lt;div class=&quot;screen&quot; data-step=&quot;6&quot;&gt;
-      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 05&lt;/span&gt;
-      &lt;span class=&quot;qnum&quot;&gt;Q5&lt;/span&gt;
-      &lt;h2 class=&quot;qtitle&quot;&gt;시공사·벤더와 의견이 충돌하는 상황에서, 본인의 우선순위는?&lt;/h2&gt;
-      &lt;p class=&quot;qhint&quot;&gt;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&lt;/p&gt;
-      &lt;div class=&quot;choices&quot; id=&quot;q5-choices&quot;&gt;
-        &lt;div class=&quot;choice&quot; data-val=&quot;A&quot;&gt;&lt;span class=&quot;letter&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;기술기준 우선&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice&quot; data-val=&quot;B&quot;&gt;&lt;span class=&quot;letter&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;일정준수 우선&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice&quot; data-val=&quot;C&quot;&gt;&lt;span class=&quot;letter&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;비용효율 우선&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice&quot; data-val=&quot;D&quot;&gt;&lt;span class=&quot;letter&quot;&gt;D&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;현장협의체 합의 우선&lt;/span&gt;&lt;/div&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;!-- Q6 --&gt;
-    &lt;div class=&quot;screen&quot; data-step=&quot;7&quot;&gt;
-      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;WORK STYLE · 06&lt;/span&gt;
-      &lt;span class=&quot;qnum&quot;&gt;Q6&lt;/span&gt;
-      &lt;h2 class=&quot;qtitle&quot;&gt;본인이 가장 일하기 편한 리더 스타일은?&lt;/h2&gt;
-      &lt;p class=&quot;qhint&quot;&gt;정답은 없습니다. 본인에게 더 가까운 쪽을 선택해주세요.&lt;/p&gt;
-      &lt;div class=&quot;choices&quot; id=&quot;q6-choices&quot;&gt;
-        &lt;div class=&quot;choice&quot; data-val=&quot;A&quot;&gt;&lt;span class=&quot;letter&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;방향만 주고 방법은 전적으로 맡기는 리더&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice&quot; data-val=&quot;B&quot;&gt;&lt;span class=&quot;letter&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;주기적으로 체크인하며 방향을 같이 조정하는 리더&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;choice&quot; data-val=&quot;C&quot;&gt;&lt;span class=&quot;letter&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;세부 진행상황까지 함께 챙기는 리더&lt;/span&gt;&lt;/div&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
+    &lt;!-- Q1~Q6: rendered dynamically into #expertise-screens based on selected position --&gt;
+    &lt;div id=&quot;expertise-screens&quot;&gt;&lt;/div&gt;
 
     &lt;!-- Q7 --&gt;
-    &lt;div class=&quot;screen&quot; data-step=&quot;8&quot;&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;7&quot;&gt;
       &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;WORK STYLE · 07&lt;/span&gt;
       &lt;span class=&quot;qnum&quot;&gt;Q7&lt;/span&gt;
       &lt;h2 class=&quot;qtitle&quot;&gt;한 달에 2주 이상 타 지역 현장에 상주해야 하는 프로젝트가 주어진다면, 우선 고려사항 1가지는?&lt;/h2&gt;
@@ -715,7 +679,7 @@
     &lt;/div&gt;
 
     &lt;!-- Q8 --&gt;
-    &lt;div class=&quot;screen&quot; data-step=&quot;9&quot;&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;8&quot;&gt;
       &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;WORK STYLE · 08&lt;/span&gt;
       &lt;span class=&quot;qnum&quot;&gt;Q8&lt;/span&gt;
       &lt;h2 class=&quot;qtitle&quot;&gt;현장에서 일할 때, 본인에게 더 중요한 것의 순서를 매겨주세요.&lt;/h2&gt;
@@ -729,7 +693,7 @@
     &lt;/div&gt;
 
     &lt;!-- Q9 (이직 희망사유) --&gt;
-    &lt;div class=&quot;screen&quot; data-step=&quot;10&quot;&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;9&quot;&gt;
       &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;WORK STYLE · 09&lt;/span&gt;
       &lt;span class=&quot;qnum&quot;&gt;Q9&lt;/span&gt;
       &lt;h2 class=&quot;qtitle&quot;&gt;이직을 희망하시는 이유를 간단히 적어주세요.&lt;/h2&gt;
@@ -738,20 +702,39 @@
       &lt;div class=&quot;counter&quot; id=&quot;q-turnover-counter&quot;&gt;0 / 50자 이내&lt;/div&gt;
     &lt;/div&gt;
 
-    &lt;!-- SCHEDULE --&gt;
+    &lt;!-- Q10 (리더십 스타일 - 공통, 기존 전기 Q6 위치 이동) --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;10&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;WORK STYLE · 10&lt;/span&gt;
+      &lt;span class=&quot;qnum&quot;&gt;Q10&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot;&gt;본인이 가장 일하기 편한 리더 스타일은?&lt;/h2&gt;
+      &lt;p class=&quot;qhint&quot;&gt;정답은 없습니다. 본인에게 더 가까운 쪽을 선택해주세요.&lt;/p&gt;
+      &lt;div class=&quot;choices&quot; id=&quot;q10-choices&quot;&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;A&quot;&gt;&lt;span class=&quot;letter&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;방향만 주고 방법은 전적으로 맡기는 리더&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;B&quot;&gt;&lt;span class=&quot;letter&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;주기적으로 체크인하며 방향을 같이 조정하는 리더&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;C&quot;&gt;&lt;span class=&quot;letter&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;세부 진행상황까지 함께 챙기는 리더&lt;/span&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- SCHEDULE (예/아니오 방식) --&gt;
     &lt;div class=&quot;screen&quot; data-step=&quot;11&quot;&gt;
       &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;INTERVIEW SCHEDULE&lt;/span&gt;
-      &lt;h2 class=&quot;qtitle&quot; style=&quot;margin-bottom:4px;&quot;&gt;1차 면접 가능 일정을 선택해주세요&lt;/h2&gt;
-      &lt;p class=&quot;qhint&quot;&gt;가능한 시간을 모두 선택해주세요. 선택하신 시간 중 하나로 면접관과 일정이 조율됩니다.&lt;/p&gt;
-      &lt;div class=&quot;choice&quot; id=&quot;select-all-slot&quot; style=&quot;margin-bottom:14px;border-color:var(--gold);&quot;&gt;
-        &lt;span class=&quot;letter&quot; style=&quot;background:var(--gold);color:var(--navy);&quot;&gt;✓&lt;/span&gt;
-        &lt;span class=&quot;ctext&quot; style=&quot;font-weight:700;&quot;&gt;모든 시간 가능&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot; style=&quot;margin-bottom:4px;&quot;&gt;안내받은 시간에 면접 참여가 가능하십니까?&lt;/h2&gt;
+      &lt;p class=&quot;qhint&quot;&gt;채용 공고 또는 별도 안내를 통해 전달받은 1차 면접 시간 기준입니다.&lt;/p&gt;
+      &lt;div class=&quot;attend-choices&quot;&gt;
+        &lt;div class=&quot;choice&quot; id=&quot;attend-yes&quot; data-val=&quot;yes&quot;&gt;
+          &lt;span class=&quot;ctext&quot;&gt;예, 참여 가능합니다&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;choice&quot; id=&quot;attend-no&quot; data-val=&quot;no&quot;&gt;
+          &lt;span class=&quot;ctext&quot;&gt;아니오, 참여가 어렵습니다&lt;/span&gt;
+        &lt;/div&gt;
       &lt;/div&gt;
-      &lt;div id=&quot;slot-list&quot;&gt;&lt;/div&gt;
 
-      &lt;div class=&quot;choice&quot; id=&quot;cannot-attend-slot&quot; style=&quot;margin-top:14px;border-color:var(--warn);&quot;&gt;
-        &lt;span class=&quot;letter&quot; style=&quot;background:var(--warn);&quot;&gt;✕&lt;/span&gt;
-        &lt;span class=&quot;ctext&quot; style=&quot;font-weight:700;&quot;&gt;제시된 시간에 참여가 어렵습니다 (별도 조율 요청)&lt;/span&gt;
+      &lt;div id=&quot;alt-time-block&quot; class=&quot;alt-time-block&quot; style=&quot;display:none;&quot;&gt;
+        &lt;div class=&quot;alt-time-note&quot;&gt;
+          6/24(수) 15:00–17:00, 6/25(목) 09:00–14:00 사이 가능한 시간을 작성해주세요.&lt;br&gt;
+          제안드린 시간 모두 불가 시 6/29(월)~7/3(금) 가능일정 작성
+        &lt;/div&gt;
+        &lt;textarea id=&quot;alt-time-input&quot; rows=&quot;3&quot; maxlength=&quot;200&quot; placeholder=&quot;예: 6/25(목) 10:00~11:00 가능합니다&quot;&gt;&lt;/textarea&gt;
       &lt;/div&gt;
     &lt;/div&gt;
 
@@ -801,107 +784,164 @@
 const HR_EMAILS = [&quot;sujin.park0@sk.com&quot;, &quot;sh.leee@sk.com&quot;, &quot;eunseo@sk.com&quot;, &quot;0heatherpark0@gmail.com&quot;]; // 발송 대상 (gmail 포함, 화면 비표시)
 const STORAGE_PREFIX = &quot;dc_prescreen&quot;; // 면접관/HR 대시보드와 공유하는 storage key prefix
 
+/* ============ POSITION-SPECIFIC QUESTIONS (Q1~Q6) ============ */
+const POSITIONS = {&quot;전기&quot;: {&quot;position&quot;: &quot;전기&quot;, &quot;positionLabel&quot;: &quot;전기직무&quot;, &quot;questions&quot;: [{&quot;id&quot;: &quot;q1&quot;, &quot;qnum&quot;: &quot;Q1&quot;, &quot;type&quot;: &quot;text&quot;, &quot;title&quot;: &quot;가장 최근 수행한 프로젝트명을 적어주세요.&quot;, &quot;hint&quot;: &quot;지원서에 기재하신 프로젝트 중 하나를 적어주시면 됩니다. (예: 카타르 LNG Project)&quot;, &quot;placeholder&quot;: &quot;프로젝트명 입력&quot;, &quot;maxlength&quot;: 40}, {&quot;id&quot;: &quot;q2&quot;, &quot;qnum&quot;: &quot;Q2&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;그 프로젝트에서, 본인이 직접 의사결정한 부분과 상급자·타 부서가 결정한 부분을 구분해서 적어주세요.&quot;, &quot;hintEchoProject&quot;: true, &quot;placeholder&quot;: &quot;예: 차단기 용량은 ETAP 해석 결과로 제가 직접 산정했고, 최종 Vendor 선정은 PM 협의로 결정되었습니다.&quot;, &quot;maxlength&quot;: 120, &quot;recommended&quot;: 80}, {&quot;id&quot;: &quot;q3&quot;, &quot;qnum&quot;: &quot;Q3&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;같은 프로젝트에서, 가장 어려웠던 기술적 이슈 1개를 구체적 수치나 현상과 함께 적어주세요.&quot;, &quot;hintEchoProject&quot;: true, &quot;placeholder&quot;: &quot;예: 22kV 2회선 무정전 인입 작업 중 절연저항이 기준치(1000MΩ) 이하로 측정되어 케이블 교체가 필요했던 상황&quot;, &quot;maxlength&quot;: 120, &quot;recommended&quot;: 80}, {&quot;id&quot;: &quot;q4&quot;, &quot;qnum&quot;: &quot;Q4&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;실제로 수행해본 업무의 범위를 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다. 실제로 수행해본 업무의 범위만 체크해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;design&quot;, &quot;label&quot;: &quot;설계 (Design)&quot;}, {&quot;val&quot;: &quot;procurement&quot;, &quot;label&quot;: &quot;구매 / Vendor 기술검토&quot;}, {&quot;val&quot;: &quot;construction&quot;, &quot;label&quot;: &quot;시공관리 (Construction)&quot;}, {&quot;val&quot;: &quot;commissioning&quot;, &quot;label&quot;: &quot;시운전 (FAT / SAT / Cx)&quot;}, {&quot;val&quot;: &quot;operation&quot;, &quot;label&quot;: &quot;운영 (Commissioning 이후)&quot;}]}, {&quot;id&quot;: &quot;q5&quot;, &quot;qnum&quot;: &quot;Q5&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;운영 중인 DC에서 무중단이 필수인 전력설비 교체작업을 맡았다면, 가장 먼저 할 일은?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;영향범위 시뮬레이션 (부하·전원경로 분석)&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;백업 경로 사전 확보&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;관련 부서·고객 사전 공지&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;작업 매뉴얼(MOP) 재검토&quot;}]}, {&quot;id&quot;: &quot;q6&quot;, &quot;qnum&quot;: &quot;Q6&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;시공사·벤더와 의견이 충돌하는 상황에서, 본인의 우선순위는?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;기술기준 우선&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;일정준수 우선&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;비용효율 우선&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;현장협의체 합의 우선&quot;}]}]}, &quot;기계&quot;: {&quot;position&quot;: &quot;기계&quot;, &quot;positionLabel&quot;: &quot;기계직무&quot;, &quot;questions&quot;: [{&quot;id&quot;: &quot;q1&quot;, &quot;qnum&quot;: &quot;Q1&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;데이터센터 냉각 시스템 경험 분야를 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다. 실제로 경험한 분야만 체크해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;chiller&quot;, &quot;label&quot;: &quot;Chiller&quot;}, {&quot;val&quot;: &quot;crac_crah&quot;, &quot;label&quot;: &quot;CRAC / CRAH&quot;}, {&quot;val&quot;: &quot;free_cooling&quot;, &quot;label&quot;: &quot;Free Cooling&quot;}, {&quot;val&quot;: &quot;piping&quot;, &quot;label&quot;: &quot;냉각수 배관&quot;}, {&quot;val&quot;: &quot;liquid_cooling&quot;, &quot;label&quot;: &quot;액침냉각 (Liquid Cooling)&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q2&quot;, &quot;qnum&quot;: &quot;Q2&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;담당하신 데이터센터의 규모는 어느 정도였나요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;10MW 미만&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;10~50MW&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;50~100MW&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;100MW 이상&quot;}, {&quot;val&quot;: &quot;E&quot;, &quot;label&quot;: &quot;해당없음&quot;}]}, {&quot;id&quot;: &quot;q3&quot;, &quot;qnum&quot;: &quot;Q3&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;공조 방식 설계·운영 경험은 어느 쪽인가요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;수냉식 (Water-cooled)&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;공냉식 (Air-cooled)&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;둘 다&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q4&quot;, &quot;qnum&quot;: &quot;Q4&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;Cx(Commissioning) 참여 레벨은 어디까지였나요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;L1~L2&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;L3~L4&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;L5~L6&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;참여경험없음&quot;}]}, {&quot;id&quot;: &quot;q5&quot;, &quot;qnum&quot;: &quot;Q5&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;담당하신 데이터센터 냉각·공조 프로젝트 중 가장 어려웠던 기술적 이슈와 해결 방법을 적어주세요.&quot;, &quot;hint&quot;: &quot;구체적인 수치나 현상을 포함해 적어주시면 좋습니다.&quot;, &quot;placeholder&quot;: &quot;예: 여름철 외기온 38도 조건에서 Free Cooling 전환 실패로 CRAH 입구온도가 기준치를 초과했던 상황과 해결 과정&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}, {&quot;id&quot;: &quot;q6&quot;, &quot;qnum&quot;: &quot;Q6&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;PUE 개선 또는 에너지 효율화 프로젝트를 주도하거나 참여한 경험이 있다면, 목표·방법·결과를 적어주세요.&quot;, &quot;hint&quot;: &quot;경험이 없다면 &#x27;경험없음&#x27;으로 적어주셔도 됩니다.&quot;, &quot;placeholder&quot;: &quot;예: PUE 1.5 → 1.35 목표로 Free Cooling 가동시간 확대, 결과적으로 연간 전력비 12% 절감&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}]}, &quot;시스템&quot;: {&quot;position&quot;: &quot;시스템&quot;, &quot;positionLabel&quot;: &quot;시스템직무&quot;, &quot;questions&quot;: [{&quot;id&quot;: &quot;q1&quot;, &quot;qnum&quot;: &quot;Q1&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;데이터센터 인프라 담당 영역을 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다. 실제로 담당한 영역만 체크해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;server&quot;, &quot;label&quot;: &quot;서버&quot;}, {&quot;val&quot;: &quot;network&quot;, &quot;label&quot;: &quot;네트워크&quot;}, {&quot;val&quot;: &quot;storage&quot;, &quot;label&quot;: &quot;스토리지&quot;}, {&quot;val&quot;: &quot;virtualization&quot;, &quot;label&quot;: &quot;가상화&quot;}, {&quot;val&quot;: &quot;monitoring&quot;, &quot;label&quot;: &quot;모니터링/관제&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q2&quot;, &quot;qnum&quot;: &quot;Q2&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;운영 경험이 있는 데이터센터 유형은 무엇인가요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;Hyperscale&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;Colocation&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;Enterprise (자체 IDC)&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q3&quot;, &quot;qnum&quot;: &quot;Q3&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;클라우드 연계 운영 경험을 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;aws&quot;, &quot;label&quot;: &quot;AWS&quot;}, {&quot;val&quot;: &quot;azure&quot;, &quot;label&quot;: &quot;Azure&quot;}, {&quot;val&quot;: &quot;gcp&quot;, &quot;label&quot;: &quot;GCP&quot;}, {&quot;val&quot;: &quot;onprem_only&quot;, &quot;label&quot;: &quot;온프레미스만&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q4&quot;, &quot;qnum&quot;: &quot;Q4&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;장애대응 체계 참여 경험을 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;spof&quot;, &quot;label&quot;: &quot;SPOF 분석&quot;}, {&quot;val&quot;: &quot;rca&quot;, &quot;label&quot;: &quot;RCA (원인분석)&quot;}, {&quot;val&quot;: &quot;monitoring_build&quot;, &quot;label&quot;: &quot;모니터링 체계 구축&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q5&quot;, &quot;qnum&quot;: &quot;Q5&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;운영 중 발생한 주요 장애 사례와 대응 경험을 적어주세요.&quot;, &quot;hint&quot;: &quot;구체적인 수치나 현상을 포함해 적어주시면 좋습니다.&quot;, &quot;placeholder&quot;: &quot;예: 스토리지 컨트롤러 장애로 인한 서비스 중단(15분) 발생 시, RCA 진행 후 이중화 구조로 개선&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}, {&quot;id&quot;: &quot;q6&quot;, &quot;qnum&quot;: &quot;Q6&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;CSP(클라우드 서비스 제공자) 감사 대응 또는 컴플라이언스 관련 프로젝트 경험이 있다면, 역할과 결과를 적어주세요.&quot;, &quot;hint&quot;: &quot;경험이 없다면 &#x27;경험없음&#x27;으로 적어주셔도 됩니다.&quot;, &quot;placeholder&quot;: &quot;예: AWS 감사 대응 시 보안그룹 정책 정비 담당, 지적사항 0건으로 완료&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}]}};
+
+let selectedPosition = null;
+
+function selectPosition(pos){
+  selectedPosition = pos;
+  document.querySelectorAll(&#x27;.pos-card&#x27;).forEach(el=&gt;{
+    el.classList.toggle(&#x27;selected&#x27;, el.dataset.pos === pos);
+  });
+}
+
 /* ============ STATE ============ */
 let step = 0; // 0 = intro
-const TOTAL_STEPS = 12; // 1~10 questions, 11 schedule, 12 confirm
+const TOTAL_STEPS = 12; // 1~6 expertise, 7~10 work style, 11 schedule, 12 confirm
 const answers = {};
 
 function startFlow(){
   const name = document.getElementById(&#x27;applicant-name&#x27;).value.trim();
   const email = document.getElementById(&#x27;applicant-email&#x27;).value.trim();
   const err = document.getElementById(&#x27;intro-error&#x27;);
-  if(!name || !email){
+  if(!name || !email || !selectedPosition){
     err.style.display = &#x27;block&#x27;;
     return;
   }
   err.style.display = &#x27;none&#x27;;
   answers.applicantName = name;
   answers.applicantEmail = email;
+  answers.position = selectedPosition;
+  renderExpertiseScreens(selectedPosition);
+  document.getElementById(&#x27;topbar-brand&#x27;).textContent = `DC·${selectedPosition} PRE-SCREEN`;
   goTo(1);
 }
 
-const SLOTS = [
-  {id:&#x27;s1&#x27;, date:&#x27;2026년 6월 24일 (수)&#x27;, time:&#x27;오전 10:00 – 11:00&#x27;, avail:&#x27;여유&#x27;},
-  {id:&#x27;s2&#x27;, date:&#x27;2026년 6월 24일 (수)&#x27;, time:&#x27;오후 2:00 – 3:00&#x27;, avail:&#x27;마감임박&#x27;},
-  {id:&#x27;s3&#x27;, date:&#x27;2026년 6월 25일 (목)&#x27;, time:&#x27;오전 11:00 – 12:00&#x27;, avail:&#x27;여유&#x27;},
-  {id:&#x27;s4&#x27;, date:&#x27;2026년 6월 26일 (금)&#x27;, time:&#x27;오후 3:00 – 4:00&#x27;, avail:&#x27;여유&#x27;},
-];
-
-function renderSlots(){
-  const wrap = document.getElementById(&#x27;slot-list&#x27;);
-  wrap.innerHTML = SLOTS.map(s =&gt; `
-    &lt;div class=&quot;slot&quot; data-id=&quot;${s.id}&quot; onclick=&quot;toggleSlot(&#x27;${s.id}&#x27;)&quot;&gt;
-      &lt;div style=&quot;display:flex;align-items:center;gap:12px;&quot;&gt;
-        &lt;span class=&quot;check&quot; style=&quot;width:18px;height:18px;border-radius:4px;border:1.5px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;&quot;&gt;
-          &lt;svg class=&quot;slot-checkmark&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; style=&quot;display:none;width:11px;height:11px;&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;
-        &lt;/span&gt;
-        &lt;div&gt;
-          &lt;div class=&quot;sdate&quot;&gt;${s.date}&lt;/div&gt;
-          &lt;div class=&quot;stime mono&quot;&gt;${s.time}&lt;/div&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;
-      &lt;span class=&quot;savail ${s.avail===&#x27;마감임박&#x27;?&#x27;few&#x27;:&#x27;&#x27;}&quot;&gt;${s.avail}&lt;/span&gt;
-    &lt;/div&gt;
-  `).join(&#x27;&#x27;);
+/* ============ RENDER EXPERTISE SCREENS (Q1~Q6, position-specific) ============ */
+function escapeAttr(s){
+  return (s||&#x27;&#x27;).replace(/&quot;/g,&#x27;&amp;quot;&#x27;);
 }
-renderSlots();
 
-function refreshSlotUI(){
-  const cannotAttend = !!answers.cannotAttend;
-  document.querySelectorAll(&#x27;.slot&#x27;).forEach(el=&gt;{
-    const isSelected = !cannotAttend &amp;&amp; (answers.slots||[]).includes(el.dataset.id);
-    el.classList.toggle(&#x27;selected&#x27;, isSelected);
-    el.style.opacity = cannotAttend ? &#x27;0.4&#x27; : &#x27;1&#x27;;
-    el.style.pointerEvents = cannotAttend ? &#x27;none&#x27; : &#x27;auto&#x27;;
-    const check = el.querySelector(&#x27;.check&#x27;);
-    const mark = el.querySelector(&#x27;.slot-checkmark&#x27;);
-    if(isSelected){
-      check.style.background = &#x27;var(--navy)&#x27;;
-      check.style.borderColor = &#x27;var(--navy)&#x27;;
-      mark.style.display = &#x27;block&#x27;;
-    }else{
-      check.style.background = &#x27;transparent&#x27;;
-      check.style.borderColor = &#x27;var(--line)&#x27;;
-      mark.style.display = &#x27;none&#x27;;
+function renderExpertiseScreens(pos){
+  const def = POSITIONS[pos];
+  const wrap = document.getElementById(&#x27;expertise-screens&#x27;);
+  let html = &#x27;&#x27;;
+  def.questions.forEach((q, idx)=&gt;{
+    const stepNum = idx + 1;
+    html += `&lt;div class=&quot;screen&quot; data-step=&quot;${stepNum}&quot;&gt;`;
+    html += `&lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 0${stepNum}&lt;/span&gt;`;
+    html += `&lt;span class=&quot;qnum&quot;&gt;${q.qnum}&lt;/span&gt;`;
+    if(q.type !== &#x27;multi&#x27; &amp;&amp; q.type !== &#x27;single&#x27;){
+      html += `&lt;h2 class=&quot;qtitle&quot;&gt;${q.title}&lt;/h2&gt;`;
+    } else {
+      // single/multi: title shown as hint-style heading above choices for consistency
+      html += `&lt;h2 class=&quot;qtitle&quot;&gt;${q.title}&lt;/h2&gt;`;
+    }
+    if(q.hint){
+      html += `&lt;p class=&quot;qhint&quot;&gt;${q.hint}&lt;/p&gt;`;
+    }
+    if(q.hintEchoProject){
+      html += `&lt;p class=&quot;qhint&quot;&gt;대상 프로젝트: &lt;span class=&quot;var&quot; id=&quot;proj-echo-${q.id}&quot;&gt;—&lt;/span&gt;&lt;/p&gt;`;
+    }
+
+    if(q.type === &#x27;text&#x27;){
+      html += `&lt;input type=&quot;text&quot; id=&quot;exp-${q.id}-input&quot; maxlength=&quot;${q.maxlength||40}&quot; placeholder=&quot;${escapeAttr(q.placeholder||&#x27;&#x27;)}&quot;&gt;`;
+    } else if(q.type === &#x27;textarea&#x27;){
+      html += `&lt;textarea id=&quot;exp-${q.id}-input&quot; rows=&quot;4&quot; maxlength=&quot;${q.maxlength||120}&quot; placeholder=&quot;${escapeAttr(q.placeholder||&#x27;&#x27;)}&quot;&gt;&lt;/textarea&gt;`;
+      html += `&lt;div class=&quot;counter&quot; id=&quot;exp-${q.id}-counter&quot;&gt;0 / ${q.recommended||80}자 권장&lt;/div&gt;`;
+    } else if(q.type === &#x27;multi&#x27;){
+      html += `&lt;div class=&quot;choices&quot; id=&quot;exp-${q.id}-choices&quot;&gt;`;
+      q.options.forEach(o=&gt;{
+        html += `&lt;div class=&quot;choice multi&quot; data-val=&quot;${o.val}&quot;&gt;&lt;span class=&quot;check&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;${o.label}&lt;/span&gt;&lt;/div&gt;`;
+      });
+      html += `&lt;/div&gt;`;
+    } else if(q.type === &#x27;single&#x27;){
+      html += `&lt;div class=&quot;choices&quot; id=&quot;exp-${q.id}-choices&quot;&gt;`;
+      q.options.forEach(o=&gt;{
+        html += `&lt;div class=&quot;choice&quot; data-val=&quot;${o.val}&quot;&gt;&lt;span class=&quot;letter&quot;&gt;${o.val}&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;${o.label}&lt;/span&gt;&lt;/div&gt;`;
+      });
+      html += `&lt;/div&gt;`;
+    }
+    html += `&lt;/div&gt;`;
+  });
+  wrap.innerHTML = html;
+
+  // wire up events for the newly rendered screens
+  def.questions.forEach((q)=&gt;{
+    if(q.type === &#x27;text&#x27;){
+      const el = document.getElementById(`exp-${q.id}-input`);
+      el.addEventListener(&#x27;input&#x27;, ()=&gt;{
+        answers[`exp-${q.id}`] = el.value;
+        // echo into any textarea hints referencing project name
+        const display = el.value.trim().length ? el.value.trim() : &#x27;—&#x27;;
+        def.questions.forEach(q2=&gt;{
+          if(q2.hintEchoProject){
+            const echoEl = document.getElementById(`proj-echo-${q2.id}`);
+            if(echoEl) echoEl.textContent = display;
+          }
+        });
+        updateNextEnabled();
+      });
+    } else if(q.type === &#x27;textarea&#x27;){
+      const el = document.getElementById(`exp-${q.id}-input`);
+      const counter = document.getElementById(`exp-${q.id}-counter`);
+      el.addEventListener(&#x27;input&#x27;, ()=&gt;{
+        const len = el.value.length;
+        if(counter){
+          counter.textContent = `${len} / ${q.recommended||80}자 권장`;
+          counter.classList.toggle(&#x27;over&#x27;, len &gt; (q.recommended||80));
+        }
+        answers[`exp-${q.id}`] = el.value;
+        updateNextEnabled();
+      });
+    } else if(q.type === &#x27;multi&#x27;){
+      const wrapEl = document.getElementById(`exp-${q.id}-choices`);
+      wrapEl.addEventListener(&#x27;click&#x27;, (e)=&gt;{
+        const item = e.target.closest(&#x27;.choice&#x27;);
+        if(!item) return;
+        item.classList.toggle(&#x27;selected&#x27;);
+        const selected = [...wrapEl.querySelectorAll(&#x27;.choice.selected&#x27;)].map(el=&gt;el.dataset.val);
+        answers[`exp-${q.id}`] = selected;
+        updateNextEnabled();
+      });
+    } else if(q.type === &#x27;single&#x27;){
+      const wrapEl = document.getElementById(`exp-${q.id}-choices`);
+      wrapEl.addEventListener(&#x27;click&#x27;, (e)=&gt;{
+        const item = e.target.closest(&#x27;.choice&#x27;);
+        if(!item) return;
+        wrapEl.querySelectorAll(&#x27;.choice&#x27;).forEach(el=&gt;el.classList.remove(&#x27;selected&#x27;));
+        item.classList.add(&#x27;selected&#x27;);
+        answers[`exp-${q.id}`] = item.dataset.val;
+        updateNextEnabled();
+      });
     }
   });
-  const allSelected = !cannotAttend &amp;&amp; (answers.slots||[]).length === SLOTS.length;
-  const selectAllEl = document.getElementById(&#x27;select-all-slot&#x27;);
-  selectAllEl.classList.toggle(&#x27;selected&#x27;, allSelected);
-  selectAllEl.style.opacity = cannotAttend ? &#x27;0.4&#x27; : &#x27;1&#x27;;
-  selectAllEl.style.pointerEvents = cannotAttend ? &#x27;none&#x27; : &#x27;auto&#x27;;
-  document.getElementById(&#x27;cannot-attend-slot&#x27;).classList.toggle(&#x27;selected&#x27;, cannotAttend);
 }
 
-function toggleSlot(id){
-  if(!answers.slots) answers.slots = [];
-  const idx = answers.slots.indexOf(id);
-  if(idx&gt;-1) answers.slots.splice(idx,1);
-  else answers.slots.push(id);
-  refreshSlotUI();
-  updateNextEnabled();
-}
+/* ============ ATTEND YES/NO ============ */
+document.getElementById(&#x27;attend-yes&#x27;).addEventListener(&#x27;click&#x27;, ()=&gt;{ setAttend(true); });
+document.getElementById(&#x27;attend-no&#x27;).addEventListener(&#x27;click&#x27;, ()=&gt;{ setAttend(false); });
 
-function toggleAllSlots(){
-  if(!answers.slots) answers.slots = [];
-  const allSelected = answers.slots.length === SLOTS.length;
-  answers.slots = allSelected ? [] : SLOTS.map(s=&gt;s.id);
-  refreshSlotUI();
-  updateNextEnabled();
-}
-document.getElementById(&#x27;select-all-slot&#x27;).addEventListener(&#x27;click&#x27;, toggleAllSlots);
-
-function toggleCannotAttend(){
-  answers.cannotAttend = !answers.cannotAttend;
-  if(answers.cannotAttend){
-    answers.slots = []; // 참여불가 선택 시 기존 슬롯 선택 초기화
+function setAttend(canAttend){
+  answers.cannotAttend = !canAttend;
+  document.getElementById(&#x27;attend-yes&#x27;).classList.toggle(&#x27;selected&#x27;, canAttend);
+  document.getElementById(&#x27;attend-no&#x27;).classList.toggle(&#x27;selected&#x27;, !canAttend);
+  const altBlock = document.getElementById(&#x27;alt-time-block&#x27;);
+  altBlock.style.display = canAttend ? &#x27;none&#x27; : &#x27;block&#x27;;
+  if(canAttend){
+    answers.altTimeRequest = &#x27;&#x27;;
+    document.getElementById(&#x27;alt-time-input&#x27;).value = &#x27;&#x27;;
   }
-  refreshSlotUI();
   updateNextEnabled();
 }
-document.getElementById(&#x27;cannot-attend-slot&#x27;).addEventListener(&#x27;click&#x27;, toggleCannotAttend);
 
-/* ============ CIRCUIT PROGRESS (steps 1-8 only) ============ */
+document.getElementById(&#x27;alt-time-input&#x27;).addEventListener(&#x27;input&#x27;, (e)=&gt;{
+  answers.altTimeRequest = e.target.value;
+  updateNextEnabled();
+});
+
+/* ============ CIRCUIT PROGRESS (steps 1-10) ============ */
 function renderCircuit(){
   const c = document.getElementById(&#x27;circuit&#x27;);
   let html = &#x27;&#x27;;
@@ -920,7 +960,7 @@ function updateStageLabel(){
   const label = document.getElementById(&#x27;stage-label&#x27;);
   if(step&gt;=1 &amp;&amp; step&lt;=6) label.textContent = `SECTION 1 / 직무전문성 · ${step}/6`;
   else if(step&gt;=7 &amp;&amp; step&lt;=10) label.textContent = `SECTION 2 / 일하는 방식 · ${step-6}/4`;
-  else if(step===11) label.textContent = `면접 일정 선택`;
+  else if(step===11) label.textContent = `면접 일정 확인`;
   else if(step===12) label.textContent = `제출 완료`;
 }
 
@@ -949,7 +989,7 @@ function goTo(n){
   prevBtn.style.visibility = (n===1) ? &#x27;hidden&#x27; : &#x27;visible&#x27;;
 
   const nextBtn = document.getElementById(&#x27;next-btn&#x27;);
-  if(n===11){ nextBtn.innerHTML = &#x27;일정 확정&lt;span class=&quot;arrow&quot;&gt;→&lt;/span&gt;&#x27;; }
+  if(n===11){ nextBtn.innerHTML = &#x27;제출하기&lt;span class=&quot;arrow&quot;&gt;→&lt;/span&gt;&#x27;; }
   else if(n===12){ document.getElementById(&#x27;footer&#x27;).style.display=&#x27;none&#x27;; }
   else { nextBtn.innerHTML = &#x27;다음&lt;span class=&quot;arrow&quot;&gt;→&lt;/span&gt;&#x27;; }
 
@@ -957,38 +997,74 @@ function goTo(n){
   window.scrollTo(0,0);
 }
 
-/* ============ LABEL MAPS (for mailto / storage readability) ============ */
+/* ============ LABEL MAPS (work-style + leadership, shared across positions) ============ */
 const LABELS = {
-  q3: {design:&#x27;설계&#x27;, procurement:&#x27;구매/Vendor 검토&#x27;, construction:&#x27;시공관리&#x27;, commissioning:&#x27;시운전(FAT/SAT/Cx)&#x27;, operation:&#x27;운영&#x27;},
-  q4: {A:&#x27;영향범위 시뮬레이션&#x27;, B:&#x27;백업 경로 사전 확보&#x27;, C:&#x27;관련 부서·고객 사전 공지&#x27;, D:&#x27;작업 매뉴얼(MOP) 재검토&#x27;},
-  q5: {A:&#x27;기술기준 우선&#x27;, B:&#x27;일정준수 우선&#x27;, C:&#x27;비용효율 우선&#x27;, D:&#x27;현장협의체 합의 우선&#x27;},
-  q6: {A:&#x27;방향만 주고 방법은 맡기는 리더&#x27;, B:&#x27;주기적으로 체크인하는 리더&#x27;, C:&#x27;세부진행까지 챙기는 리더&#x27;},
+  q10: {A:&#x27;방향만 주고 방법은 맡기는 리더&#x27;, B:&#x27;주기적으로 체크인하는 리더&#x27;, C:&#x27;세부진행까지 챙기는 리더&#x27;},
   q8rank: {speed:&#x27;빠른 의사결정&#x27;, review:&#x27;꼼꼼한 사전검토&#x27;, relation:&#x27;현장 협의체와의 관계&#x27;, report:&#x27;본사 보고체계 준수&#x27;}
 };
 
-function buildSubmissionRecord(){
-  const selectedSlots = (answers.slots||[]).map(id =&gt; SLOTS.find(x=&gt;x.id===id)).filter(Boolean);
-  const slotStrings = selectedSlots.map(s =&gt; `${s.date} ${s.time}`);
-  const cannotAttend = !!answers.cannotAttend;
+function buildExpertiseRecord(){
+  const pos = answers.position;
+  const def = POSITIONS[pos];
+  const expertise = {};
+  def.questions.forEach(q=&gt;{
+    const raw = answers[`exp-${q.id}`];
+    let value;
+    if(q.type === &#x27;multi&#x27;){
+      value = (raw||[]).map(v=&gt;{
+        const opt = q.options.find(o=&gt;o.val===v);
+        return opt ? opt.label : v;
+      });
+    } else if(q.type === &#x27;single&#x27;){
+      const opt = (q.options||[]).find(o=&gt;o.val===raw);
+      value = opt ? opt.label : (raw||&#x27;&#x27;);
+    } else {
+      value = raw || &#x27;&#x27;;
+    }
+    expertise[q.id] = { qnum: q.qnum, title: q.title, value: value, type: q.type };
+  });
+  return expertise;
+}
+
+/* 레거시 호환: 전기직무는 기존 면접관/HR 화면에서 쓰던 필드명을 그대로 같이 채워준다. */
+function buildLegacyElectricalFields(expertise){
+  const get = (id)=&gt; expertise[id] ? expertise[id].value : &#x27;&#x27;;
   return {
+    project: get(&#x27;q1&#x27;) || &#x27;&#x27;,
+    decisionBoundary: get(&#x27;q2&#x27;) || &#x27;&#x27;,
+    techIssue: get(&#x27;q3&#x27;) || &#x27;&#x27;,
+    phasesInvolved: Array.isArray(get(&#x27;q4&#x27;)) ? get(&#x27;q4&#x27;) : [],
+    scenarioMaintenance: get(&#x27;q5&#x27;) || &#x27;&#x27;,
+    scenarioVendorConflict: get(&#x27;q6&#x27;) || &#x27;&#x27;,
+  };
+}
+
+function buildSubmissionRecord(){
+  const cannotAttend = !!answers.cannotAttend;
+  const expertise = buildExpertiseRecord();
+  const pos = answers.position;
+
+  const record = {
     candidateName: answers.applicantName || &#x27;&#x27;,
     candidateEmail: answers.applicantEmail || &#x27;&#x27;,
     submittedAt: new Date().toISOString(),
-    project: answers[&#x27;q1-proj-input&#x27;] || &#x27;&#x27;,
-    decisionBoundary: answers[&#x27;q1-input&#x27;] || &#x27;&#x27;,
-    techIssue: answers[&#x27;q2-input&#x27;] || &#x27;&#x27;,
-    phasesInvolved: (answers.q3||[]).map(v=&gt;LABELS.q3[v]||v),
-    scenarioMaintenance: LABELS.q4[answers.q4] || &#x27;&#x27;,
-    scenarioVendorConflict: LABELS.q5[answers.q5] || &#x27;&#x27;,
-    leadershipPref: LABELS.q6[answers.q6] || &#x27;&#x27;,
+    position: pos,
+    expertise: expertise,
+    leadershipPref: LABELS.q10[answers.q10] || &#x27;&#x27;,
     relocationConsideration: answers[&#x27;q7-input&#x27;] || &#x27;&#x27;,
     turnoverReason: answers[&#x27;q-turnover-input&#x27;] || &#x27;&#x27;,
     priorityRank: (answers.q8||[]).map(v=&gt;LABELS.q8rank[v]||v),
     cannotAttend: cannotAttend,
-    interviewSlots: slotStrings,
-    interviewSlot: cannotAttend ? &#x27;제시된 시간 참여 불가 (별도 조율 필요)&#x27; : slotStrings.join(&#x27; / &#x27;), // 면접관/HR 화면 호환용 (문자열 합본)
+    altTimeRequest: cannotAttend ? (answers.altTimeRequest || &#x27;&#x27;) : &#x27;&#x27;,
+    interviewSlot: cannotAttend ? `제시된 시간 참여 불가 (요청: ${answers.altTimeRequest || &#x27;미작성&#x27;})` : &#x27;안내받은 시간 참여 가능&#x27;,
     status: &#x27;사전질문 제출완료&#x27;
   };
+
+  if(pos === &#x27;전기&#x27;){
+    Object.assign(record, buildLegacyElectricalFields(expertise));
+  }
+
+  return record;
 }
 
 async function saveSubmissionToStorage(record){
@@ -1001,27 +1077,31 @@ async function saveSubmissionToStorage(record){
 }
 
 function buildEmailSubjectAndBody(record){
-  const subject = `[DC전기직무 사전인터뷰 제출] ${record.candidateName}`;
+  const subject = `[DC${record.position}직무 사전인터뷰 제출] ${record.candidateName}`;
   const bodyLines = [
     `지원자: ${record.candidateName} (${record.candidateEmail})`,
     `제출시각: ${new Date(record.submittedAt).toLocaleString(&#x27;ko-KR&#x27;)}`,
+    `지원직무: ${record.position}`,
     ``,
-    `[1차 면접 희망 일정] ${record.interviewSlot}`,
-    ``,
-    `--- 직무전문성 ---`,
-    `Q1. 프로젝트명: ${record.project}`,
-    `Q2. 의사결정 경계: ${record.decisionBoundary}`,
-    `Q3. 기술적 이슈: ${record.techIssue}`,
-    `Q4. 참여 단계: ${record.phasesInvolved.join(&#x27;, &#x27;)}`,
-    `Q5. 무중단작업 시나리오: ${record.scenarioMaintenance}`,
-    `Q6. 벤더 의견충돌 우선순위: ${record.scenarioVendorConflict}`,
+    `[1차 면접 참여 가능 여부] ${record.cannotAttend ? &#x27;참여 불가&#x27; : &#x27;참여 가능&#x27;}`,
+  ];
+  if(record.cannotAttend){
+    bodyLines.push(`[별도 요청 일정] ${record.altTimeRequest || &#x27;미작성&#x27;}`);
+  }
+  bodyLines.push(``, `--- 직무전문성 (${record.position}) ---`);
+  Object.keys(record.expertise).forEach(qid=&gt;{
+    const q = record.expertise[qid];
+    const val = Array.isArray(q.value) ? q.value.join(&#x27;, &#x27;) : q.value;
+    bodyLines.push(`${q.qnum}. ${q.title}: ${val}`);
+  });
+  bodyLines.push(
     ``,
     `--- 일하는 방식 ---`,
-    `Q7. 선호 리더십 스타일: ${record.leadershipPref}`,
-    `Q8. 지역근무 우선고려사항: ${record.relocationConsideration}`,
-    `Q9. 현장 우선순위: ${record.priorityRank.join(&#x27; &gt; &#x27;)}`,
-    `Q10. 이직 희망사유: ${record.turnoverReason}`,
-  ];
+    `Q7. 지역근무 우선고려사항: ${record.relocationConsideration}`,
+    `Q8. 현장 우선순위: ${record.priorityRank.join(&#x27; &gt; &#x27;)}`,
+    `Q9. 이직 희망사유: ${record.turnoverReason}`,
+    `Q10. 선호 리더십 스타일: ${record.leadershipPref}`,
+  );
   return { subject, body: bodyLines.join(&#x27;\n&#x27;) };
 }
 
@@ -1058,8 +1138,7 @@ function prevStep(){
   goTo(step-1);
 }
 
-/* ============ INPUT WIRING ============ */
-// Q1, Q2, Q7 textareas
+/* ============ INPUT WIRING (work-style, fixed across positions) ============ */
 function wireTextarea(id, counterId, max, recommended){
   const el = document.getElementById(id);
   const counter = document.getElementById(counterId);
@@ -1071,42 +1150,17 @@ function wireTextarea(id, counterId, max, recommended){
     updateNextEnabled();
   });
 }
-wireTextarea(&#x27;q1-input&#x27;,&#x27;q1-counter&#x27;,120,80);
-wireTextarea(&#x27;q2-input&#x27;,&#x27;q2-counter&#x27;,120,80);
 wireTextarea(&#x27;q7-input&#x27;,&#x27;q7-counter&#x27;,80,50);
 wireTextarea(&#x27;q-turnover-input&#x27;,&#x27;q-turnover-counter&#x27;,80,50);
 
-// Q1 project name input -&gt; echoes into Q2/Q3 hints, and into final summary
-const projInput = document.getElementById(&#x27;q1-proj-input&#x27;);
-projInput.addEventListener(&#x27;input&#x27;, ()=&gt;{
-  const val = projInput.value.trim();
-  answers[&#x27;q1-proj-input&#x27;] = projInput.value;
-  const display = val.length ? val : &#x27;—&#x27;;
-  document.getElementById(&#x27;q2-proj-echo&#x27;).textContent = display;
-  document.getElementById(&#x27;q3-proj-echo&#x27;).textContent = display;
-  updateNextEnabled();
-});
-
-// Q3 multi-select
-document.getElementById(&#x27;q3-choices&#x27;).addEventListener(&#x27;click&#x27;, (e)=&gt;{
+// Q10 single-select (leadership style)
+document.getElementById(&#x27;q10-choices&#x27;).addEventListener(&#x27;click&#x27;, (e)=&gt;{
   const item = e.target.closest(&#x27;.choice&#x27;);
   if(!item) return;
-  item.classList.toggle(&#x27;selected&#x27;);
-  const selected = [...document.querySelectorAll(&#x27;#q3-choices .choice.selected&#x27;)].map(el=&gt;el.dataset.val);
-  answers.q3 = selected;
+  document.querySelectorAll(&#x27;#q10-choices .choice&#x27;).forEach(el=&gt;el.classList.remove(&#x27;selected&#x27;));
+  item.classList.add(&#x27;selected&#x27;);
+  answers.q10 = item.dataset.val;
   updateNextEnabled();
-});
-
-// Q4, Q5, Q6 single-select
-[&#x27;q4&#x27;,&#x27;q5&#x27;,&#x27;q6&#x27;].forEach(qid=&gt;{
-  document.getElementById(qid+&#x27;-choices&#x27;).addEventListener(&#x27;click&#x27;, (e)=&gt;{
-    const item = e.target.closest(&#x27;.choice&#x27;);
-    if(!item) return;
-    document.querySelectorAll(`#${qid}-choices .choice`).forEach(el=&gt;el.classList.remove(&#x27;selected&#x27;));
-    item.classList.add(&#x27;selected&#x27;);
-    answers[qid] = item.dataset.val;
-    updateNextEnabled();
-  });
 });
 
 // Q8 drag-to-rank
@@ -1160,22 +1214,41 @@ ranklist.addEventListener(&#x27;touchend&#x27;, ()=&gt;{
 });
 
 /* ============ VALIDATION ============ */
+function isExpertiseStepValid(stepNum){
+  const pos = answers.position;
+  if(!pos) return false;
+  const def = POSITIONS[pos];
+  const q = def.questions[stepNum-1];
+  if(!q) return true;
+  const raw = answers[`exp-${q.id}`];
+  if(q.type === &#x27;text&#x27; || q.type === &#x27;textarea&#x27;){
+    return (raw||&#x27;&#x27;).trim().length &gt; 0;
+  } else if(q.type === &#x27;multi&#x27;){
+    return (raw||[]).length &gt; 0;
+  } else if(q.type === &#x27;single&#x27;){
+    return !!raw;
+  }
+  return true;
+}
+
 function updateNextEnabled(){
   const nextBtn = document.getElementById(&#x27;next-btn&#x27;);
   let ok = true;
-  switch(step){
-    case 1: ok = (answers[&#x27;q1-proj-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
-    case 2: ok = (answers[&#x27;q1-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
-    case 3: ok = (answers[&#x27;q2-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
-    case 4: ok = (answers.q3||[]).length&gt;0; break;
-    case 5: ok = !!answers.q4; break;
-    case 6: ok = !!answers.q5; break;
-    case 7: ok = !!answers.q6; break;
-    case 8: ok = (answers[&#x27;q7-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
-    case 9: ok = true; break; // ranking always has a value
-    case 10: ok = (answers[&#x27;q-turnover-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
-    case 11: ok = (answers.slots||[]).length&gt;0 || !!answers.cannotAttend; break;
-    default: ok = true;
+  if(step&gt;=1 &amp;&amp; step&lt;=6){
+    ok = isExpertiseStepValid(step);
+  } else {
+    switch(step){
+      case 7: ok = (answers[&#x27;q7-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
+      case 8: ok = true; break; // ranking always has a value
+      case 9: ok = (answers[&#x27;q-turnover-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
+      case 10: ok = !!answers.q10; break;
+      case 11:
+        if(answers.cannotAttend === undefined){ ok = false; }
+        else if(answers.cannotAttend){ ok = (answers.altTimeRequest||&#x27;&#x27;).trim().length&gt;0; }
+        else { ok = true; }
+        break;
+      default: ok = true;
+    }
   }
   nextBtn.disabled = !ok;
 }
@@ -1356,7 +1429,7 @@ goTo(0);
 
 &lt;meta charset=&quot;UTF-8&quot;&gt;
 &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
-&lt;title&gt;면접관 참고화면 — DC전기직무&lt;/title&gt;
+&lt;title&gt;면접관 참고화면 — DC경력채용&lt;/title&gt;
 &lt;style&gt;
   @import url(&#x27;https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap&#x27;);
   :root{
@@ -1458,6 +1531,24 @@ goTo(0);
     padding:9px 14px; font-size:12.5px; cursor:pointer; color:var(--slate); font-weight:600;
   }
   .topbar-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+
+  /* ===== Position filter + badge ===== */
+  .pos-filter-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .pos-fchip{
+    background:var(--card); border:1.5px solid var(--line); border-radius:7px;
+    padding:7px 13px; font-size:12.5px; font-weight:600; cursor:pointer; color:var(--slate);
+  }
+  .pos-fchip.active{background:var(--navy); color:var(--cream); border-color:var(--navy);}
+  .pos-badge{
+    display:inline-block; font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:11px; font-weight:700;
+    padding:4px 10px; border-radius:6px; letter-spacing:.03em;
+    background:rgba(201,169,97,0.18); color:var(--navy); border:1px solid var(--gold);
+  }
+  .cand-chip .pos-mini{
+    display:inline-block; font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:9.5px; font-weight:700;
+    margin-left:6px; padding:1px 6px; border-radius:4px; background:rgba(255,255,255,0.15); color:inherit;
+  }
+  .cand-chip:not(.active) .pos-mini{background:rgba(15,27,46,0.08); color:var(--slate);}
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -1474,6 +1565,8 @@ goTo(0);
     &lt;button class=&quot;refresh-btn&quot; onclick=&quot;loadCandidates()&quot;&gt;⟳ 새로고침&lt;/button&gt;
   &lt;/div&gt;
 
+  &lt;div class=&quot;pos-filter-chips&quot; id=&quot;pos-filter-chips&quot;&gt;&lt;/div&gt;
+
   &lt;div class=&quot;candidate-select&quot; id=&quot;candidate-select&quot;&gt;&lt;/div&gt;
 
   &lt;div id=&quot;empty-state&quot; class=&quot;empty-state&quot;&gt;
@@ -1488,6 +1581,7 @@ goTo(0);
 const STORAGE_PREFIX = &quot;dc_prescreen&quot;;
 let candidates = [];
 let activeIndex = 0;
+let activePosFilter = &quot;전체&quot;;
 
 async function loadCandidates(){
   try{
@@ -1504,6 +1598,7 @@ async function loadCandidates(){
     }
     loaded.sort((a,b)=&gt; new Date(b.submittedAt) - new Date(a.submittedAt));
     candidates = loaded;
+    activeIndex = 0;
     render();
   }catch(e){
     console.error(&#x27;지원자 목록 로드 실패:&#x27;, e);
@@ -1512,13 +1607,34 @@ async function loadCandidates(){
   }
 }
 
+function getFilteredCandidates(){
+  if(activePosFilter === &quot;전체&quot;) return candidates;
+  return candidates.filter(c =&gt; (c.position || &#x27;전기&#x27;) === activePosFilter);
+}
+
+function setPosFilter(pos){
+  activePosFilter = pos;
+  activeIndex = 0;
+  render();
+}
+
+function renderPosFilters(){
+  const positions = [&quot;전체&quot;, ...new Set(candidates.map(c =&gt; c.position || &#x27;전기&#x27;))];
+  document.getElementById(&#x27;pos-filter-chips&#x27;).innerHTML = positions.map(p =&gt; `
+    &lt;div class=&quot;pos-fchip ${p===activePosFilter?&#x27;active&#x27;:&#x27;&#x27;}&quot; onclick=&quot;setPosFilter(&#x27;${p}&#x27;)&quot;&gt;${p}${p!==&#x27;전체&#x27; ? &#x27;&#x27; : &#x27;&#x27;}&lt;/div&gt;
+  `).join(&#x27;&#x27;);
+}
+
 function render(){
-  document.getElementById(&#x27;cand-count&#x27;).textContent = candidates.length;
+  const filtered = getFilteredCandidates();
+  document.getElementById(&#x27;cand-count&#x27;).textContent = filtered.length;
   const emptyState = document.getElementById(&#x27;empty-state&#x27;);
   const select = document.getElementById(&#x27;candidate-select&#x27;);
   const panels = document.getElementById(&#x27;panels&#x27;);
 
-  if(candidates.length === 0){
+  renderPosFilters();
+
+  if(filtered.length === 0){
     emptyState.style.display = &#x27;block&#x27;;
     select.innerHTML = &#x27;&#x27;;
     panels.innerHTML = &#x27;&#x27;;
@@ -1526,14 +1642,14 @@ function render(){
   }
   emptyState.style.display = &#x27;none&#x27;;
 
-  select.innerHTML = candidates.map((c,i)=&gt;`
+  select.innerHTML = filtered.map((c,i)=&gt;`
     &lt;div class=&quot;cand-chip ${i===activeIndex?&#x27;active&#x27;:&#x27;&#x27;}&quot; onclick=&quot;selectCandidate(${i})&quot;&gt;
-      ${escapeHtml(c.candidateName || &#x27;이름없음&#x27;)}
+      ${escapeHtml(c.candidateName || &#x27;이름없음&#x27;)}&lt;span class=&quot;pos-mini&quot;&gt;${escapeHtml(c.position || &#x27;전기&#x27;)}&lt;/span&gt;
       &lt;span class=&quot;ctime&quot;&gt;${formatDate(c.submittedAt)}&lt;/span&gt;
     &lt;/div&gt;
   `).join(&#x27;&#x27;);
 
-  panels.innerHTML = candidates.map((c,i)=&gt; renderPanel(c,i)).join(&#x27;&#x27;);
+  panels.innerHTML = filtered.map((c,i)=&gt; renderPanel(c,i)).join(&#x27;&#x27;);
 }
 
 function selectCandidate(i){ activeIndex = i; render(); }
@@ -1555,39 +1671,86 @@ function lacksDetail(text){
   return tooShort || !hasNumber;
 }
 
+/* 신규 구조(expertise 객체)를 가진 레코드인지 확인 */
+function hasExpertiseStructure(c){
+  return c &amp;&amp; c.expertise &amp;&amp; typeof c.expertise === &#x27;object&#x27;;
+}
+
+function renderExpertiseQACards(c){
+  if(!hasExpertiseStructure(c)) return &#x27;&#x27;;
+  return Object.keys(c.expertise).map(qid=&gt;{
+    const q = c.expertise[qid];
+    const isMulti = Array.isArray(q.value);
+    const valText = isMulti ? &#x27;&#x27; : (q.value || &#x27;&#x27;);
+    const short = !isMulti &amp;&amp; q.type === &#x27;textarea&#x27; &amp;&amp; lacksDetail(valText);
+    return `
+    &lt;div class=&quot;qa-card ${short?&#x27;short&#x27;:&#x27;&#x27;}&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;${q.qnum} · ${escapeHtml(q.title)}&lt;/div&gt;
+      ${isMulti
+        ? `&lt;div class=&quot;chips&quot;&gt;${(q.value||[]).map(v=&gt;`&lt;span class=&quot;chip-item&quot;&gt;${escapeHtml(v)}&lt;/span&gt;`).join(&#x27;&#x27;) || &#x27;&lt;span class=&quot;qa empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;`
+        : `&lt;div class=&quot;qa&quot;&gt;${escapeHtml(valText) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;`
+      }
+      ${short ? &#x27;&lt;span class=&quot;tag-lowdetail&quot;&gt;디테일 확인 필요&lt;/span&gt;&#x27; : &#x27;&#x27;}
+    &lt;/div&gt;`;
+  }).join(&#x27;&#x27;);
+}
+
+function buildFlagsForCandidate(c){
+  const flags = [];
+  if(hasExpertiseStructure(c)){
+    Object.keys(c.expertise).forEach(qid=&gt;{
+      const q = c.expertise[qid];
+      if(!Array.isArray(q.value) &amp;&amp; q.type === &#x27;textarea&#x27; &amp;&amp; lacksDetail(q.value)){
+        flags.push({type:&#x27;warn&#x27;, icon:&#x27;⚠&#x27;, text:`${q.qnum}(${q.title}) 응답에 구체적 수치·디테일이 부족합니다. 면접에서 직접 확인해보세요.`});
+      }
+      if(Array.isArray(q.value) &amp;&amp; q.value.length === 0){
+        flags.push({type:&#x27;info&#x27;, icon:&#x27;ℹ&#x27;, text:`${q.qnum}(${q.title}) 응답이 없습니다.`});
+      }
+    });
+  } else {
+    // legacy electrical fallback
+    if(lacksDetail(c.decisionBoundary)){
+      flags.push({type:&#x27;warn&#x27;, icon:&#x27;⚠&#x27;, text:&#x27;Q2(의사결정 경계) 응답에 구체적 수치·디테일이 부족합니다. 본인 역할의 경계를 면접에서 직접 확인해보세요.&#x27;});
+    }
+    if(lacksDetail(c.techIssue)){
+      flags.push({type:&#x27;warn&#x27;, icon:&#x27;⚠&#x27;, text:&#x27;Q3(기술적 이슈) 응답에 구체적 수치·현상이 부족합니다. 실제 경험 여부를 검증할 필요가 있습니다.&#x27;});
+    }
+    if(!c.phasesInvolved || c.phasesInvolved.length === 0){
+      flags.push({type:&#x27;info&#x27;, icon:&#x27;ℹ&#x27;, text:&#x27;참여 단계 응답이 없습니다.&#x27;});
+    }else if(c.phasesInvolved.length === 1){
+      flags.push({type:&#x27;info&#x27;, icon:&#x27;ℹ&#x27;, text:`참여 단계가 &quot;${c.phasesInvolved[0]}&quot; 1개로 제한적입니다. 단계별 경험 폭을 확인해보세요.`});
+    }
+  }
+  return flags;
+}
+
 function renderPanel(c, i){
   const active = i===activeIndex ? &#x27;active&#x27; : &#x27;&#x27;;
-  const flags = [];
+  const flags = buildFlagsForCandidate(c);
+  const pos = c.position || &#x27;전기&#x27;;
 
-  if(lacksDetail(c.decisionBoundary)){
-    flags.push({type:&#x27;warn&#x27;, icon:&#x27;⚠&#x27;, text:&#x27;Q2(의사결정 경계) 응답에 구체적 수치·디테일이 부족합니다. 본인 역할의 경계를 면접에서 직접 확인해보세요.&#x27;});
-  }
-  if(lacksDetail(c.techIssue)){
-    flags.push({type:&#x27;warn&#x27;, icon:&#x27;⚠&#x27;, text:&#x27;Q3(기술적 이슈) 응답에 구체적 수치·현상이 부족합니다. 실제 경험 여부를 검증할 필요가 있습니다.&#x27;});
-  }
-  if(!c.phasesInvolved || c.phasesInvolved.length === 0){
-    flags.push({type:&#x27;info&#x27;, icon:&#x27;ℹ&#x27;, text:&#x27;참여 단계 응답이 없습니다.&#x27;});
-  }else if(c.phasesInvolved.length === 1){
-    flags.push({type:&#x27;info&#x27;, icon:&#x27;ℹ&#x27;, text:`참여 단계가 &quot;${c.phasesInvolved[0]}&quot; 1개로 제한적입니다. 단계별 경험 폭을 확인해보세요.`});
-  }
+  const scheduleText = c.cannotAttend
+    ? `⚠ 참여불가 (요청: ${escapeHtml(c.altTimeRequest || &#x27;미작성&#x27;)})`
+    : `📅 ${escapeHtml(c.interviewSlot || &#x27;일정 확인 필요&#x27;)}`;
 
   return `
   &lt;div class=&quot;candidate-panel ${active}&quot; data-idx=&quot;${i}&quot;&gt;
 
     &lt;div class=&quot;profile-bar&quot;&gt;
       &lt;div&gt;
-        &lt;div class=&quot;pname&quot;&gt;${escapeHtml(c.candidateName)}&lt;/div&gt;
+        &lt;div class=&quot;pname&quot;&gt;${escapeHtml(c.candidateName)} &lt;span class=&quot;pos-badge&quot;&gt;${escapeHtml(pos)}&lt;/span&gt;&lt;/div&gt;
         &lt;div class=&quot;pmeta&quot;&gt;${escapeHtml(c.candidateEmail)} · 제출 ${formatDate(c.submittedAt)}&lt;/div&gt;
       &lt;/div&gt;
-      &lt;div class=&quot;slot-badge&quot; style=&quot;${c.cannotAttend ? &#x27;background:rgba(166,67,44,0.12);border-color:var(--warn);color:var(--warn);&#x27; : &#x27;&#x27;}&quot;&gt;${c.cannotAttend ? &#x27;⚠&#x27; : &#x27;📅&#x27;} ${escapeHtml(c.interviewSlot || &#x27;일정 미선택&#x27;)}&lt;/div&gt;
+      &lt;div class=&quot;slot-badge&quot; style=&quot;${c.cannotAttend ? &#x27;background:rgba(166,67,44,0.12);border-color:var(--warn);color:var(--warn);&#x27; : &#x27;&#x27;}&quot;&gt;${scheduleText}&lt;/div&gt;
     &lt;/div&gt;
 
     ${flags.length ? `&lt;div class=&quot;flag-bar&quot;&gt;
       ${flags.map(f=&gt;`&lt;div class=&quot;flag ${f.type}&quot;&gt;&lt;span class=&quot;ficon&quot;&gt;${f.icon}&lt;/span&gt;&lt;span&gt;${f.text}&lt;/span&gt;&lt;/div&gt;`).join(&#x27;&#x27;)}
     &lt;/div&gt;` : `&lt;div class=&quot;flag-bar&quot;&gt;&lt;div class=&quot;flag info&quot;&gt;&lt;span class=&quot;ficon&quot;&gt;✓&lt;/span&gt;&lt;span&gt;응답에 구체적 디테일이 포함되어 있습니다. 아래 내용을 토대로 심화 질문을 준비해보세요.&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;`}
 
-    &lt;div class=&quot;section-title&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;직무전문성&lt;/div&gt;
+    &lt;div class=&quot;section-title&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;직무전문성 (${escapeHtml(pos)})&lt;/div&gt;
 
+    ${hasExpertiseStructure(c) ? renderExpertiseQACards(c) : `
     &lt;div class=&quot;qa-card&quot;&gt;
       &lt;div class=&quot;qlabel&quot;&gt;Q1 · 프로젝트명&lt;/div&gt;
       &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.project) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
@@ -1621,37 +1784,43 @@ function renderPanel(c, i){
       &lt;div class=&quot;qlabel&quot;&gt;Q6 · 벤더 의견충돌 시 우선순위&lt;/div&gt;
       &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.scenarioVendorConflict) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
     &lt;/div&gt;
+    `}
 
     &lt;div class=&quot;section-title&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;일하는 방식&lt;/div&gt;
 
     &lt;div class=&quot;qa-card&quot;&gt;
-      &lt;div class=&quot;qlabel&quot;&gt;Q7 · 선호 리더십 스타일&lt;/div&gt;
-      &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.leadershipPref) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;div class=&quot;qa-card&quot;&gt;
-      &lt;div class=&quot;qlabel&quot;&gt;Q8 · 지역근무 우선고려사항&lt;/div&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q7 · 지역근무 우선고려사항&lt;/div&gt;
       &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.relocationConsideration) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
     &lt;/div&gt;
 
     &lt;div class=&quot;qa-card&quot;&gt;
-      &lt;div class=&quot;qlabel&quot;&gt;Q9 · 현장 우선순위&lt;/div&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q8 · 현장 우선순위&lt;/div&gt;
       &lt;div class=&quot;rank-display&quot;&gt;
         ${(c.priorityRank||[]).map((p,idx)=&gt;`&lt;div class=&quot;rank-row&quot;&gt;&lt;span class=&quot;rn&quot;&gt;${idx+1}&lt;/span&gt;&lt;span&gt;${escapeHtml(p)}&lt;/span&gt;&lt;/div&gt;`).join(&#x27;&#x27;) || &#x27;&lt;span class=&quot;qa empty&quot;&gt;미응답&lt;/span&gt;&#x27;}
       &lt;/div&gt;
     &lt;/div&gt;
 
     &lt;div class=&quot;qa-card&quot;&gt;
-      &lt;div class=&quot;qlabel&quot;&gt;Q10 · 이직 희망사유&lt;/div&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q9 · 이직 희망사유&lt;/div&gt;
       &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.turnoverReason) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;qa-card&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q10 · 선호 리더십 스타일&lt;/div&gt;
+      &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.leadershipPref) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
     &lt;/div&gt;
 
     &lt;div class=&quot;followup-box&quot;&gt;
       &lt;div class=&quot;ftitle&quot;&gt;면접 시 확인해볼 질문 (자동 제안)&lt;/div&gt;
       &lt;ul&gt;
+        ${hasExpertiseStructure(c) ? `
+        &lt;li&gt;직무전문성 응답 중 &quot;디테일 확인 필요&quot; 표시가 있다면, 해당 항목의 실제 경험 여부와 구체적 수치를 면접에서 직접 확인해보세요.&lt;/li&gt;
+        &lt;li&gt;복수선택 응답(체크박스) 항목은 실제로 본인이 주도했는지, 보조적으로만 참여했는지 역할 비중을 구분해서 질문해보세요.&lt;/li&gt;
+        ` : `
         &lt;li&gt;&quot;${escapeHtml(c.project) || &#x27;해당 프로젝트&#x27;}&quot;에서 본인이 직접 산정하거나 작성한 문서·계산서가 있었나요? 구체적으로 어떤 것이었나요?&lt;/li&gt;
         &lt;li&gt;적어주신 기술적 이슈가 실제 발생했을 때, 문제를 누가 처음 발견했고 어떤 절차로 보고/해결했나요?&lt;/li&gt;
         ${c.phasesInvolved &amp;&amp; c.phasesInvolved.length&lt;=1 ? &#x27;&lt;li&gt;설계/구매/시공/시운전/운영 단계 중 응답하신 단계 외에는 경험이 없으신가요, 아니면 간접적으로 관여한 부분이 있나요?&lt;/li&gt;&#x27; : &#x27;&#x27;}
+        `}
         &lt;li&gt;본인이 선호하는 리더십 스타일이 실제 이전 직장의 관리 방식과 어떻게 달랐는지 궁금합니다.&lt;/li&gt;
       &lt;/ul&gt;
     &lt;/div&gt;
@@ -1833,7 +2002,7 @@ loadCandidates();
 
 &lt;meta charset=&quot;UTF-8&quot;&gt;
 &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
-&lt;title&gt;HR 대시보드 — DC전기직무 채용&lt;/title&gt;
+&lt;title&gt;HR 대시보드 — DC경력채용&lt;/title&gt;
 &lt;style&gt;
   @import url(&#x27;https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap&#x27;);
   :root{
@@ -1863,6 +2032,16 @@ loadCandidates();
   .fchip{background:var(--card);border:1.5px solid var(--line);border-radius:7px;padding:7px 12px;
     font-size:12.5px;cursor:pointer;color:var(--slate);font-weight:600;}
   .fchip.active{background:var(--navy);color:var(--cream);border-color:var(--navy);}
+
+  .pos-badge-table{
+    display:inline-block; font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:10.5px; font-weight:700;
+    padding:3px 8px; border-radius:5px; letter-spacing:.02em;
+    background:rgba(201,169,97,0.18); color:var(--navy); border:1px solid var(--gold);
+  }
+  .pos-filter-group{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-right:10px;padding-right:10px;border-right:1.5px solid var(--line);}
+  @media (max-width:700px){
+    .pos-filter-group{border-right:none;padding-right:0;margin-right:0;width:100%;}
+  }
 
   .table-wrap{background:var(--card);border:1.5px solid var(--line);border-radius:12px;overflow:hidden;}
   table{width:100%;border-collapse:collapse;font-size:13.5px;}
@@ -1940,7 +2119,10 @@ loadCandidates();
   &lt;div class=&quot;stat-grid&quot; id=&quot;stat-grid&quot;&gt;&lt;/div&gt;
 
   &lt;div class=&quot;toolbar&quot;&gt;
-    &lt;div class=&quot;filter-chips&quot; id=&quot;filter-chips&quot;&gt;&lt;/div&gt;
+    &lt;div style=&quot;display:flex;align-items:center;flex-wrap:wrap;gap:10px;&quot;&gt;
+      &lt;div class=&quot;pos-filter-group&quot; id=&quot;pos-filter-group&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;filter-chips&quot; id=&quot;filter-chips&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
     &lt;span class=&quot;mono&quot; style=&quot;font-size:12px;color:var(--slate);&quot;&gt;전체 &lt;span id=&quot;total-count&quot;&gt;0&lt;/span&gt;명&lt;/span&gt;
   &lt;/div&gt;
 
@@ -1948,6 +2130,7 @@ loadCandidates();
     &lt;table&gt;
       &lt;thead&gt;
         &lt;tr&gt;
+          &lt;th&gt;직무&lt;/th&gt;
           &lt;th&gt;지원자&lt;/th&gt;
           &lt;th&gt;이메일&lt;/th&gt;
           &lt;th&gt;제출일시&lt;/th&gt;
@@ -1959,7 +2142,7 @@ loadCandidates();
         &lt;/tr&gt;
       &lt;/thead&gt;
       &lt;tbody id=&quot;table-body&quot;&gt;
-        &lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;8&quot;&gt;아직 제출된 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;9&quot;&gt;아직 제출된 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;
       &lt;/tbody&gt;
     &lt;/table&gt;
   &lt;/div&gt;
@@ -1975,6 +2158,7 @@ const STORAGE_PREFIX = &quot;dc_prescreen&quot;;
 const STATUS_OPTIONS = [&quot;사전질문 제출완료&quot;,&quot;1차면접 예정&quot;,&quot;1차면접 완료&quot;,&quot;임원면접 예정&quot;,&quot;임원면접 완료&quot;,&quot;합격&quot;,&quot;불합격&quot;];
 let candidates = [];
 let activeFilter = &quot;전체&quot;;
+let activePosFilter = &quot;전체&quot;;
 
 function escapeHtml(s){
   return (s||&#x27;&#x27;).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, m=&gt;({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[m]));
@@ -1986,6 +2170,19 @@ function formatDate(iso){
 function lacksDetail(text){
   if(!text) return true;
   return text.trim().length &lt; 15 || !/\d/.test(text);
+}
+
+/* 신규 구조(expertise 객체)를 가진 레코드인지 확인 */
+function hasExpertiseStructure(c){
+  return c &amp;&amp; c.expertise &amp;&amp; typeof c.expertise === &#x27;object&#x27;;
+}
+
+/* 해당 후보의 직무전문성 응답 중 &quot;디테일 확인 필요&quot;(서술형+짧은 답변)가 있는지 */
+function candidateNeedsCheck(c){
+  if(hasExpertiseStructure(c)){
+    return Object.values(c.expertise).some(q =&gt; q.type === &#x27;textarea&#x27; &amp;&amp; !Array.isArray(q.value) &amp;&amp; lacksDetail(q.value));
+  }
+  return lacksDetail(c.decisionBoundary) || lacksDetail(c.techIssue);
 }
 
 async function loadCandidates(){
@@ -2054,6 +2251,14 @@ function renderStats(){
   `;
 }
 
+function renderPosFilters(){
+  const positions = [&quot;전체&quot;, ...new Set(candidates.map(c =&gt; c.position || &#x27;전기&#x27;))];
+  document.getElementById(&#x27;pos-filter-group&#x27;).innerHTML = positions.map(p=&gt;`
+    &lt;div class=&quot;fchip ${p===activePosFilter?&#x27;active&#x27;:&#x27;&#x27;}&quot; onclick=&quot;setPosFilter(&#x27;${p}&#x27;)&quot;&gt;${p}&lt;/div&gt;
+  `).join(&#x27;&#x27;);
+}
+function setPosFilter(p){ activePosFilter = p; render(); }
+
 function renderFilters(){
   const opts = [&quot;전체&quot;, ...STATUS_OPTIONS];
   document.getElementById(&#x27;filter-chips&#x27;).innerHTML = opts.map(o=&gt;`
@@ -2062,24 +2267,36 @@ function renderFilters(){
 }
 function setFilter(f){ activeFilter = f; render(); }
 
+function getFilteredCandidates(){
+  return candidates.filter(c=&gt;{
+    const statusOk = activeFilter===&quot;전체&quot; || c.status===activeFilter;
+    const posOk = activePosFilter===&quot;전체&quot; || (c.position||&#x27;전기&#x27;)===activePosFilter;
+    return statusOk &amp;&amp; posOk;
+  });
+}
+
 function renderTable(){
   const tbody = document.getElementById(&#x27;table-body&#x27;);
-  const filtered = activeFilter===&quot;전체&quot; ? candidates : candidates.filter(c=&gt;c.status===activeFilter);
+  const filtered = getFilteredCandidates();
   document.getElementById(&#x27;total-count&#x27;).textContent = candidates.length;
 
   if(filtered.length===0){
-    tbody.innerHTML = `&lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;8&quot;&gt;표시할 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;`;
+    tbody.innerHTML = `&lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;9&quot;&gt;표시할 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;`;
     return;
   }
 
   tbody.innerHTML = filtered.map(c=&gt;{
-    const needsCheck = lacksDetail(c.decisionBoundary) || lacksDetail(c.techIssue);
+    const needsCheck = candidateNeedsCheck(c);
+    const slotText = c.cannotAttend
+      ? `⚠ 참여불가 (요청: ${escapeHtml(c.altTimeRequest||&#x27;미작성&#x27;)})`
+      : escapeHtml(c.interviewSlot || &#x27;미선택&#x27;);
     return `
     &lt;tr&gt;
+      &lt;td&gt;&lt;span class=&quot;pos-badge-table&quot;&gt;${escapeHtml(c.position || &#x27;전기&#x27;)}&lt;/span&gt;&lt;/td&gt;
       &lt;td class=&quot;name-cell&quot;&gt;${escapeHtml(c.candidateName)}&lt;/td&gt;
       &lt;td class=&quot;email-cell&quot;&gt;${escapeHtml(c.candidateEmail)}&lt;/td&gt;
       &lt;td class=&quot;mono&quot; style=&quot;font-size:12px;color:var(--slate);&quot;&gt;${formatDate(c.submittedAt)}&lt;/td&gt;
-      &lt;td class=&quot;slot-cell&quot; style=&quot;${c.cannotAttend ? &#x27;color:var(--warn);font-weight:700;&#x27; : &#x27;&#x27;}&quot;&gt;${c.cannotAttend ? &#x27;⚠ &#x27; : &#x27;&#x27;}${escapeHtml(c.interviewSlot) || &#x27;미선택&#x27;}&lt;/td&gt;
+      &lt;td class=&quot;slot-cell&quot; style=&quot;${c.cannotAttend ? &#x27;color:var(--warn);font-weight:700;&#x27; : &#x27;&#x27;}&quot;&gt;${slotText}&lt;/td&gt;
       &lt;td&gt;
         &lt;input type=&quot;text&quot; class=&quot;exec-slot-input&quot; value=&quot;${escapeHtml(c.execInterviewSlot||&#x27;&#x27;)}&quot; placeholder=&quot;예: 6/30(화) 14:00&quot;
           style=&quot;width:130px;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11.5px;padding:6px 8px;border:1.5px solid var(--line);border-radius:6px;&quot;
@@ -2099,6 +2316,7 @@ function renderTable(){
 
 function render(){
   renderStats();
+  renderPosFilters();
   renderFilters();
   renderTable();
 }
@@ -2107,21 +2325,39 @@ function openModal(key){
   const c = candidates.find(x=&gt;x._key===key);
   if(!c) return;
   const m = document.getElementById(&#x27;modal-content&#x27;);
+  const scheduleText = c.cannotAttend
+    ? `참여불가 (요청: ${escapeHtml(c.altTimeRequest||&#x27;미작성&#x27;)})`
+    : (escapeHtml(c.interviewSlot)||&#x27;미선택&#x27;);
+
+  let expertiseHtml = &#x27;&#x27;;
+  if(hasExpertiseStructure(c)){
+    expertiseHtml = Object.keys(c.expertise).map(qid=&gt;{
+      const q = c.expertise[qid];
+      const val = Array.isArray(q.value) ? (q.value.join(&#x27;, &#x27;)||&#x27;미응답&#x27;) : (q.value||&#x27;미응답&#x27;);
+      return `&lt;div class=&quot;mqlabel&quot;&gt;${q.qnum} · ${escapeHtml(q.title)}&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(val)}&lt;/div&gt;`;
+    }).join(&#x27;&#x27;);
+  } else {
+    expertiseHtml = `
+      &lt;div class=&quot;mqlabel&quot;&gt;Q1 · 프로젝트명&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.project)||&#x27;미응답&#x27;}&lt;/div&gt;
+      &lt;div class=&quot;mqlabel&quot;&gt;Q2 · 의사결정 경계&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.decisionBoundary)||&#x27;미응답&#x27;}&lt;/div&gt;
+      &lt;div class=&quot;mqlabel&quot;&gt;Q3 · 기술적 이슈&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.techIssue)||&#x27;미응답&#x27;}&lt;/div&gt;
+      &lt;div class=&quot;mqlabel&quot;&gt;Q4 · 참여 단계&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${(c.phasesInvolved||[]).join(&#x27;, &#x27;)||&#x27;미응답&#x27;}&lt;/div&gt;
+      &lt;div class=&quot;mqlabel&quot;&gt;Q5 · 무중단작업 시나리오&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.scenarioMaintenance)||&#x27;미응답&#x27;}&lt;/div&gt;
+      &lt;div class=&quot;mqlabel&quot;&gt;Q6 · 벤더 의견충돌 우선순위&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.scenarioVendorConflict)||&#x27;미응답&#x27;}&lt;/div&gt;
+    `;
+  }
+
   m.innerHTML = `
     &lt;button class=&quot;modal-close&quot; onclick=&quot;closeModal()&quot;&gt;닫기&lt;/button&gt;
-    &lt;h2&gt;${escapeHtml(c.candidateName)}&lt;/h2&gt;
-    &lt;div class=&quot;msub&quot;&gt;${escapeHtml(c.candidateEmail)} · 제출 ${formatDate(c.submittedAt)} · 1차면접 ${escapeHtml(c.interviewSlot)||&#x27;미선택&#x27;}${c.execInterviewSlot ? &#x27; · 임원면접 &#x27;+escapeHtml(c.execInterviewSlot) : &#x27;&#x27;}&lt;/div&gt;
+    &lt;h2&gt;${escapeHtml(c.candidateName)} &lt;span class=&quot;pos-badge-table&quot;&gt;${escapeHtml(c.position||&#x27;전기&#x27;)}&lt;/span&gt;&lt;/h2&gt;
+    &lt;div class=&quot;msub&quot;&gt;${escapeHtml(c.candidateEmail)} · 제출 ${formatDate(c.submittedAt)} · 1차면접 ${scheduleText}${c.execInterviewSlot ? &#x27; · 임원면접 &#x27;+escapeHtml(c.execInterviewSlot) : &#x27;&#x27;}&lt;/div&gt;
 
-    &lt;div class=&quot;mqlabel&quot;&gt;Q1 · 프로젝트명&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.project)||&#x27;미응답&#x27;}&lt;/div&gt;
-    &lt;div class=&quot;mqlabel&quot;&gt;Q2 · 의사결정 경계&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.decisionBoundary)||&#x27;미응답&#x27;}&lt;/div&gt;
-    &lt;div class=&quot;mqlabel&quot;&gt;Q3 · 기술적 이슈&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.techIssue)||&#x27;미응답&#x27;}&lt;/div&gt;
-    &lt;div class=&quot;mqlabel&quot;&gt;Q4 · 참여 단계&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${(c.phasesInvolved||[]).join(&#x27;, &#x27;)||&#x27;미응답&#x27;}&lt;/div&gt;
-    &lt;div class=&quot;mqlabel&quot;&gt;Q5 · 무중단작업 시나리오&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.scenarioMaintenance)||&#x27;미응답&#x27;}&lt;/div&gt;
-    &lt;div class=&quot;mqlabel&quot;&gt;Q6 · 벤더 의견충돌 우선순위&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.scenarioVendorConflict)||&#x27;미응답&#x27;}&lt;/div&gt;
-    &lt;div class=&quot;mqlabel&quot;&gt;Q7 · 선호 리더십 스타일&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.leadershipPref)||&#x27;미응답&#x27;}&lt;/div&gt;
-    &lt;div class=&quot;mqlabel&quot;&gt;Q8 · 지역근무 우선고려사항&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.relocationConsideration)||&#x27;미응답&#x27;}&lt;/div&gt;
-    &lt;div class=&quot;mqlabel&quot;&gt;Q9 · 현장 우선순위&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${(c.priorityRank||[]).join(&#x27; &gt; &#x27;)||&#x27;미응답&#x27;}&lt;/div&gt;
-    &lt;div class=&quot;mqlabel&quot;&gt;Q10 · 이직 희망사유&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.turnoverReason)||&#x27;미응답&#x27;}&lt;/div&gt;
+    ${expertiseHtml}
+
+    &lt;div class=&quot;mqlabel&quot;&gt;Q7 · 지역근무 우선고려사항&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.relocationConsideration)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q8 · 현장 우선순위&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${(c.priorityRank||[]).join(&#x27; &gt; &#x27;)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q9 · 이직 희망사유&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.turnoverReason)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q10 · 선호 리더십 스타일&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.leadershipPref)||&#x27;미응답&#x27;}&lt;/div&gt;
   `;
   document.getElementById(&#x27;modal-backdrop&#x27;).classList.add(&#x27;active&#x27;);
 }
@@ -2135,10 +2371,10 @@ function openPasteModal(){
   m.innerHTML = `
     &lt;button class=&quot;modal-close&quot; onclick=&quot;closeModal()&quot;&gt;닫기&lt;/button&gt;
     &lt;h2&gt;메일 본문 붙여넣어 등록&lt;/h2&gt;
-    &lt;div class=&quot;msub&quot;&gt;지원자가 보낸 메일의 본문 전체를 그대로 복사해서 아래에 붙여넣어주세요.&lt;/div&gt;
+    &lt;div class=&quot;msub&quot;&gt;지원자가 보낸 메일의 본문 전체를 그대로 복사해서 아래에 붙여넣어주세요. (전기/기계/시스템 모두 지원)&lt;/div&gt;
     &lt;textarea id=&quot;paste-textarea&quot; rows=&quot;14&quot; style=&quot;width:100%;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:12.5px;
       border:1.5px solid var(--line);border-radius:8px;padding:12px;box-sizing:border-box;resize:vertical;&quot;
-      placeholder=&quot;지원자: 홍길동 (hong@email.com)&amp;#10;제출시각: 2026. 6. 22. 오후 3:00:00&amp;#10;&amp;#10;[1차 면접 희망 일정] ...&amp;#10;&amp;#10;--- 직무전문성 ---&amp;#10;Q1. 프로젝트명: ...&amp;#10;(이하 메일 본문 전체를 붙여넣어주세요)&quot;&gt;&lt;/textarea&gt;
+      placeholder=&quot;지원자: 홍길동 (hong@email.com)&amp;#10;제출시각: 2026. 6. 22. 오후 3:00:00&amp;#10;지원직무: 전기&amp;#10;&amp;#10;[1차 면접 참여 가능 여부] 참여 가능&amp;#10;&amp;#10;--- 직무전문성 (전기) ---&amp;#10;Q1. ...&amp;#10;(이하 메일 본문 전체를 붙여넣어주세요)&quot;&gt;&lt;/textarea&gt;
     &lt;div id=&quot;paste-error&quot; style=&quot;display:none;color:var(--warn);font-size:12.5px;margin-top:8px;&quot;&gt;&lt;/div&gt;
     &lt;div id=&quot;paste-preview&quot; style=&quot;margin-top:14px;&quot;&gt;&lt;/div&gt;
     &lt;button class=&quot;detail-btn&quot; style=&quot;width:100%;margin-top:14px;background:var(--navy);color:var(--cream);border:none;padding:11px;font-size:13.5px;&quot;
@@ -2161,33 +2397,77 @@ function parseEmailBody(text){
   }
 
   const submittedRaw = get(/제출시각:\s*(.+)/);
-  const slot = get(/\[1차 면접 희망 일정\]\s*(.+)/);
-  const project = get(/Q1\.\s*프로젝트명:\s*(.+)/);
-  const decisionBoundary = get(/Q2\.\s*의사결정 경계:\s*(.+)/);
-  const techIssue = get(/Q3\.\s*기술적 이슈:\s*(.+)/);
-  const phasesRaw = get(/Q4\.\s*참여 단계:\s*(.+)/);
-  const scenarioMaintenance = get(/Q5\.\s*무중단작업 시나리오:\s*(.+)/);
-  const scenarioVendorConflict = get(/Q6\.\s*벤더 의견충돌 우선순위:\s*(.+)/);
-  const leadershipPref = get(/Q7\.\s*선호 리더십 스타일:\s*(.+)/);
-  const relocationConsideration = get(/Q8\.\s*지역근무 우선고려사항:\s*(.+)/);
-  const priorityRaw = get(/Q9\.\s*현장 우선순위:\s*(.+)/);
-  const turnoverReason = get(/Q10\.\s*이직 희망사유:\s*(.+)/);
+  const position = get(/지원직무:\s*(.+)/) || &#x27;전기&#x27;;
 
-  const cannotAttend = /참여 불가|별도 조율/.test(slot);
+  const attendRaw = get(/\[1차 면접 참여 가능 여부\]\s*(.+)/);
+  const cannotAttend = /참여\s*불가/.test(attendRaw);
+  const altTimeRequest = get(/\[별도 요청 일정\]\s*(.+)/);
 
-  return {
+  // 신규 형식: &quot;Qn. 제목: 값&quot; 라인을 모두 파싱해서 expertise 객체로 구성
+  // (구버전 메일도 동일한 정규식으로 잡히므로, 레거시 필드명도 함께 매핑)
+  const legacyFieldMap = {
+    &#x27;프로젝트명&#x27;: &#x27;project&#x27;,
+    &#x27;의사결정 경계&#x27;: &#x27;decisionBoundary&#x27;,
+    &#x27;기술적 이슈&#x27;: &#x27;techIssue&#x27;,
+    &#x27;참여 단계&#x27;: &#x27;phasesInvolved&#x27;,
+    &#x27;무중단작업 시나리오&#x27;: &#x27;scenarioMaintenance&#x27;,
+    &#x27;벤더 의견충돌 우선순위&#x27;: &#x27;scenarioVendorConflict&#x27;,
+  };
+
+  const expertise = {};
+  const legacy = {};
+  const lineRegex = /Q(\d+)\.\s*([^:]+):\s*(.+)/g;
+  let m;
+  let leadershipPref = &#x27;&#x27;, relocationConsideration = &#x27;&#x27;, turnoverReason = &#x27;&#x27;;
+  let priorityRaw = &#x27;&#x27;;
+  while((m = lineRegex.exec(text)) !== null){
+    const qnumInt = parseInt(m[1], 10);
+    const title = m[2].trim();
+    const value = m[3].trim();
+    if(qnumInt &lt;= 6){
+      // 직무전문성 (전기/기계/시스템 공통: Q1~Q6)
+      const qid = &#x27;q&#x27; + qnumInt;
+      const isList = /,/.test(value) &amp;&amp; legacyFieldMap[title] === &#x27;phasesInvolved&#x27;;
+      // 메일 본문만으로는 원래 질문이 서술형인지 선택형인지 구분할 수 없으므로
+      // type을 &#x27;unknown&#x27;으로 두고, 디테일 확인 로직에서는 textarea로 확정된 것만 검사한다.
+      expertise[qid] = { qnum: &#x27;Q&#x27;+qnumInt, title: title, value: value, type: &#x27;unknown&#x27; };
+      if(legacyFieldMap[title]){
+        legacy[legacyFieldMap[title]] = legacyFieldMap[title]===&#x27;phasesInvolved&#x27;
+          ? value.split(&#x27;,&#x27;).map(s=&gt;s.trim()).filter(Boolean)
+          : value;
+      }
+    } else if(qnumInt === 7){
+      relocationConsideration = value;
+    } else if(qnumInt === 8){
+      priorityRaw = value;
+    } else if(qnumInt === 9){
+      turnoverReason = value;
+    } else if(qnumInt === 10){
+      leadershipPref = value;
+    }
+  }
+
+  const rec = {
     candidateName, candidateEmail,
     submittedAt: new Date().toISOString(), // 붙여넣은 시점 기준 (원본 제출시각은 표시용으로만 별도 보관)
     originalSubmittedAtText: submittedRaw,
-    project, decisionBoundary, techIssue,
-    phasesInvolved: phasesRaw ? phasesRaw.split(&#x27;,&#x27;).map(s=&gt;s.trim()).filter(Boolean) : [],
-    scenarioMaintenance, scenarioVendorConflict, leadershipPref, relocationConsideration,
-    turnoverReason,
+    position,
+    expertise,
+    relocationConsideration,
     priorityRank: priorityRaw ? priorityRaw.split(&#x27;&gt;&#x27;).map(s=&gt;s.trim()).filter(Boolean) : [],
+    turnoverReason,
+    leadershipPref,
     cannotAttend,
-    interviewSlot: slot,
+    altTimeRequest,
+    interviewSlot: cannotAttend ? `제시된 시간 참여 불가 (요청: ${altTimeRequest||&#x27;미작성&#x27;})` : &#x27;안내받은 시간 참여 가능&#x27;,
     status: &#x27;사전질문 제출완료&#x27;
   };
+
+  if(position === &#x27;전기&#x27;){
+    Object.assign(rec, legacy);
+  }
+
+  return rec;
 }
 
 function previewPastedEmail(){
@@ -2217,23 +2497,24 @@ function previewPastedEmail(){
   // JSON을 HTML 속성에 직접 넣으면 괄호/슬래시 등 특수문자로 깨질 수 있어 전역변수에 보관
   window._pendingPasteRecord = rec;
 
+  const expertisePreview = Object.keys(rec.expertise||{}).map(qid=&gt;{
+    const q = rec.expertise[qid];
+    return `&lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;${escapeHtml(q.qnum)} ${escapeHtml(q.title)}&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(q.value)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;`;
+  }).join(&#x27;&#x27;);
+
   previewEl.innerHTML = `
     &lt;div class=&quot;summary-card&quot; style=&quot;margin-bottom:0;&quot;&gt;
       &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;지원자&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.candidateName)}&lt;/span&gt;&lt;/div&gt;
       &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;이메일&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.candidateEmail)}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;지원직무&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.position)}&lt;/span&gt;&lt;/div&gt;
       &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;1차 면접 일정&lt;/span&gt;&lt;span class=&quot;sval&quot; style=&quot;text-align:right;max-width:280px;&quot;&gt;${escapeHtml(rec.interviewSlot)||&#x27;미선택&#x27;}&lt;/span&gt;&lt;/div&gt;
     &lt;/div&gt;
     &lt;div class=&quot;summary-card&quot; style=&quot;margin-top:10px;margin-bottom:0;&quot;&gt;
-      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q1 프로젝트명&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.project)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
-      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q2 의사결정 경계&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.decisionBoundary)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
-      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q3 기술적 이슈&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.techIssue)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
-      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q4 참여 단계&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${(rec.phasesInvolved||[]).join(&#x27;, &#x27;)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
-      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q5 무중단작업 시나리오&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.scenarioMaintenance)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
-      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q6 벤더 의견충돌 우선순위&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.scenarioVendorConflict)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
-      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q7 선호 리더십 스타일&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.leadershipPref)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
-      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q8 지역근무 우선고려사항&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.relocationConsideration)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
-      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q9 현장 우선순위&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${(rec.priorityRank||[]).join(&#x27; &gt; &#x27;)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
-      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q10 이직 희망사유&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.turnoverReason)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      ${expertisePreview}
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q7 지역근무 우선고려사항&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.relocationConsideration)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q8 현장 우선순위&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${(rec.priorityRank||[]).join(&#x27; &gt; &#x27;)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q9 이직 희망사유&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.turnoverReason)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q10 선호 리더십 스타일&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.leadershipPref)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
     &lt;/div&gt;
     &lt;button class=&quot;detail-btn&quot; style=&quot;width:100%;margin-top:12px;background:var(--ok);color:white;border:none;padding:11px;font-size:13.5px;&quot;
       onclick=&quot;registerPastedCandidate()&quot;&gt;이 내용으로 등록하기&lt;/button&gt;
