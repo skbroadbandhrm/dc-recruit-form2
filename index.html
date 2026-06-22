@@ -102,10 +102,10 @@
     </div>
 
     <div class="tabs" id="tabs-desktop">
-      <div class="tab active" data-target="applicant"><span class="ticon">📝</span>지원자 사전인터뷰</div>
       <div class="tab" data-target="schedule"><span class="ticon">🗓️</span>일정취합</div>
       <div class="tab" data-target="interviewer"><span class="ticon">🗂️</span>면접관 참고화면</div>
       <div class="tab" data-target="hr"><span class="ticon">📊</span>HR 대시보드</div>
+      <div class="tab active" data-target="applicant"><span class="ticon">📝</span>지원자 사전인터뷰</div>
     </div>
 
     <div class="nav-right">
@@ -3132,10 +3132,10 @@ function renderHr(){
   </div>
 
   <div class="tabs-mobile" id="tabs-mobile">
-    <div class="tabm active" data-target="applicant"><span class="ticon">📝</span>지원자</div>
     <div class="tabm" data-target="schedule"><span class="ticon">🗓️</span>일정취합</div>
     <div class="tabm" data-target="interviewer"><span class="ticon">🗂️</span>면접관</div>
     <div class="tabm" data-target="hr"><span class="ticon">📊</span>HR</div>
+    <div class="tabm active" data-target="applicant"><span class="ticon">📝</span>지원자</div>
   </div>
 
 <script>
@@ -3162,16 +3162,16 @@ document.querySelectorAll('.tabm').forEach(t=>{
 
 
 <style>
-  /* 기본: 면접관/직원 전용 탭 숨김 (지원자에게는 지원자 탭만 보임) */
-  body:not(.staff-mode) .tab[data-target="interviewer"],
+  /* HR 대시보드: #staff 전용 (지원자/면접관에게는 숨김) */
   body:not(.staff-mode) .tab[data-target="hr"],
-  body:not(.staff-mode) .tabm[data-target="interviewer"],
   body:not(.staff-mode) .tabm[data-target="hr"]{
     display:none !important;
   }
-  /* 일정취합 탭: #interview 또는 #staff로 접근했을 때만 표시 (지원자에게는 숨김) */
+  /* 일정취합 / 면접관 참고화면: #interview 또는 #staff로 접근했을 때 표시 (지원자에게는 숨김) */
   body:not(.interview-mode):not(.staff-mode) .tab[data-target="schedule"],
-  body:not(.interview-mode):not(.staff-mode) .tabm[data-target="schedule"]{
+  body:not(.interview-mode):not(.staff-mode) .tabm[data-target="schedule"],
+  body:not(.interview-mode):not(.staff-mode) .tab[data-target="interviewer"],
+  body:not(.interview-mode):not(.staff-mode) .tabm[data-target="interviewer"]{
     display:none !important;
   }
 </style>
@@ -3190,10 +3190,11 @@ document.querySelectorAll('.tabm').forEach(t=>{
     }else if(isInterview()){
       document.body.classList.remove("staff-mode");
       document.body.classList.add("interview-mode");
-      // 면접관 링크로는 면접관/HR 전용 화면에 들어가 있으면 지원자 탭으로 되돌림
+      // 면접관 링크(#interview)로는 HR 전용 화면에 들어가 있으면 지원자 탭으로 되돌림.
+      // 일정취합/면접관 참고화면은 #interview에서도 허용.
       var activePane = document.querySelector(".pane.active");
       var activeId = activePane ? activePane.id : "";
-      if(activeId === "pane-interviewer" || activeId === "pane-hr"){
+      if(activeId === "pane-hr"){
         if(typeof switchTab === "function"){ try{ switchTab("applicant"); }catch(e){} }
       }
     }else{
