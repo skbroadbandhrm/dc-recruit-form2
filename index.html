@@ -2005,6 +2005,7 @@ loadCandidates();
     delete: async function(key){
       const email = stripPrefix(key);
       const { error } = await _sb.from(&#x27;candidates&#x27;).delete().eq(&#x27;email&#x27;, email);
+      if(error){ console.error(&#x27;Supabase delete 실패:&#x27;, error); }
       return { key: key, deleted: !error, shared: true };
     }
   };
@@ -2385,8 +2386,8 @@ function updateBulkDeleteButton(){
 
 async function bulkDeleteSelected(){
   if(selectedKeys.size === 0) return;
-  const names = candidates.filter(c=&gt;selectedKeys.has(c._key)).map(c=&gt;c.candidateName).filter(Boolean);
-  const ok = confirm(`${selectedKeys.size}명(${names.join(&#x27;, &#x27;)})의 제출 내용을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`);
+  const namesToDelete = candidates.filter(c=&gt;selectedKeys.has(c._key));
+  const ok = confirm(`${selectedKeys.size}명(${namesToDelete.map(c=&gt;c.candidateName).join(&#x27;, &#x27;)})의 제출 내용을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`);
   if(!ok) return;
 
   const keysToDelete = [...selectedKeys];
@@ -2395,16 +2396,26 @@ async function bulkDeleteSelected(){
   btn.dataset.originalHtml = btn.innerHTML;
   btn.textContent = &#x27;삭제 중…&#x27;;
 
+  const failedNames = [];
   for(const key of keysToDelete){
+    const c = candidates.find(x=&gt;x._key===key);
     try{
-      await window.storage.delete(key, true);
+      const result = await window.storage.delete(key, true);
+      if(!result || result.deleted === false){
+        failedNames.push(c ? c.candidateName : key);
+      }
     }catch(e){
       console.error(&#x27;삭제 실패:&#x27;, key, e);
+      failedNames.push(c ? c.candidateName : key);
     }
   }
 
   selectedKeys.clear();
   await loadCandidates();
+
+  if(failedNames.length &gt; 0){
+    alert(`다음 ${failedNames.length}명은 삭제에 실패했습니다: ${failedNames.join(&#x27;, &#x27;)}\n\nSupabase의 candidates 테이블에 RLS(Row Level Security)가 DELETE를 막고 있을 수 있습니다. 관리자에게 문의해주세요.`);
+  }
 }
 
 function render(){
