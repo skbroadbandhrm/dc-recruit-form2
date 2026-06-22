@@ -1302,12 +1302,15 @@ goTo(0);
   #dc-login-card button:disabled{opacity:.5;cursor:not-allowed;}
   #dc-login-err{display:none;color:#A6432C;font-size:12.5px;margin-top:4px;margin-bottom:8px;text-align:center;}
   #dc-logout-bar{
-    display:none; position:fixed; top:0; right:0; z-index:40; padding:8px 12px;
+    display:none; position:fixed; top:10px; right:10px; z-index:9000; padding:0;
   }
   #dc-logout-bar button{
-    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff;
-    font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:11px; border-radius:6px; padding:6px 10px; cursor:pointer;
+    background:#0F1B2E; border:1.5px solid #C9A961; color:#F7F5F0;
+    font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:11.5px; font-weight:700;
+    border-radius:7px; padding:8px 13px; cursor:pointer;
+    box-shadow:0 2px 10px rgba(0,0,0,0.25);
   }
+  #dc-logout-bar button:hover{background:#16263d;}
   body.dc-locked{overflow:hidden;}
 &lt;/style&gt;
 &lt;div id=&quot;dc-login-overlay&quot;&gt;
@@ -1875,12 +1878,15 @@ loadCandidates();
   #dc-login-card button:disabled{opacity:.5;cursor:not-allowed;}
   #dc-login-err{display:none;color:#A6432C;font-size:12.5px;margin-top:4px;margin-bottom:8px;text-align:center;}
   #dc-logout-bar{
-    display:none; position:fixed; top:0; right:0; z-index:40; padding:8px 12px;
+    display:none; position:fixed; top:10px; right:10px; z-index:9000; padding:0;
   }
   #dc-logout-bar button{
-    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff;
-    font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:11px; border-radius:6px; padding:6px 10px; cursor:pointer;
+    background:#0F1B2E; border:1.5px solid #C9A961; color:#F7F5F0;
+    font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:11.5px; font-weight:700;
+    border-radius:7px; padding:8px 13px; cursor:pointer;
+    box-shadow:0 2px 10px rgba(0,0,0,0.25);
   }
+  #dc-logout-bar button:hover{background:#16263d;}
   body.dc-locked{overflow:hidden;}
 &lt;/style&gt;
 &lt;div id=&quot;dc-login-overlay&quot;&gt;
@@ -2127,6 +2133,10 @@ loadCandidates();
     &lt;div style=&quot;display:flex;align-items:center;flex-wrap:wrap;gap:10px;&quot;&gt;
       &lt;div class=&quot;pos-filter-group&quot; id=&quot;pos-filter-group&quot;&gt;&lt;/div&gt;
       &lt;div class=&quot;filter-chips&quot; id=&quot;filter-chips&quot;&gt;&lt;/div&gt;
+      &lt;button class=&quot;refresh-btn&quot; id=&quot;bulk-delete-btn&quot; onclick=&quot;bulkDeleteSelected()&quot; disabled
+        style=&quot;background:var(--warn);border-color:var(--warn);color:white;font-weight:700;opacity:.4;&quot;&gt;
+        🗑 선택 삭제 (&lt;span id=&quot;selected-count-num&quot;&gt;0&lt;/span&gt;)
+      &lt;/button&gt;
     &lt;/div&gt;
     &lt;span class=&quot;mono&quot; style=&quot;font-size:12px;color:var(--slate);&quot;&gt;전체 &lt;span id=&quot;total-count&quot;&gt;0&lt;/span&gt;명&lt;/span&gt;
   &lt;/div&gt;
@@ -2135,6 +2145,7 @@ loadCandidates();
     &lt;table&gt;
       &lt;thead&gt;
         &lt;tr&gt;
+          &lt;th style=&quot;width:36px;&quot;&gt;&lt;input type=&quot;checkbox&quot; id=&quot;select-all-checkbox&quot; onchange=&quot;toggleSelectAll(this.checked)&quot;&gt;&lt;/th&gt;
           &lt;th&gt;직무&lt;/th&gt;
           &lt;th&gt;지원자&lt;/th&gt;
           &lt;th&gt;이메일&lt;/th&gt;
@@ -2146,7 +2157,7 @@ loadCandidates();
         &lt;/tr&gt;
       &lt;/thead&gt;
       &lt;tbody id=&quot;table-body&quot;&gt;
-        &lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;8&quot;&gt;아직 제출된 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;9&quot;&gt;아직 제출된 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;
       &lt;/tbody&gt;
     &lt;/table&gt;
   &lt;/div&gt;
@@ -2163,6 +2174,7 @@ const STATUS_OPTIONS = [&quot;사전질문 제출완료&quot;,&quot;1차면접 �
 let candidates = [];
 let activeFilter = &quot;전체&quot;;
 let activePosFilter = &quot;전체&quot;;
+let selectedKeys = new Set();
 
 function escapeHtml(s){
   return (s||&#x27;&#x27;).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, m=&gt;({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[m]));
@@ -2291,8 +2303,13 @@ function renderTable(){
   const filtered = getFilteredCandidates();
   document.getElementById(&#x27;total-count&#x27;).textContent = candidates.length;
 
+  // 필터링되어 화면에서 사라진 항목의 선택은 해제 (보이지 않는 선택 상태 방지)
+  const filteredKeys = new Set(filtered.map(c=&gt;c._key));
+  [...selectedKeys].forEach(k=&gt;{ if(!filteredKeys.has(k)) selectedKeys.delete(k); });
+
   if(filtered.length===0){
-    tbody.innerHTML = `&lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;8&quot;&gt;표시할 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;`;
+    tbody.innerHTML = `&lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;9&quot;&gt;표시할 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;`;
+    updateBulkDeleteButton();
     return;
   }
 
@@ -2301,8 +2318,10 @@ function renderTable(){
     const slotText = c.cannotAttend
       ? `⚠ 참여불가 (요청: ${escapeHtml(c.altTimeRequest||&#x27;미작성&#x27;)})`
       : formatSlotText(c.interviewSlot || &#x27;미선택&#x27;);
+    const isChecked = selectedKeys.has(c._key);
     return `
     &lt;tr&gt;
+      &lt;td&gt;&lt;input type=&quot;checkbox&quot; class=&quot;row-checkbox&quot; data-key=&quot;${escapeHtml(c._key)}&quot; ${isChecked?&#x27;checked&#x27;:&#x27;&#x27;} onchange=&quot;toggleRowSelect(&#x27;${escapeHtml(c._key)}&#x27;, this.checked)&quot;&gt;&lt;/td&gt;
       &lt;td&gt;&lt;span class=&quot;pos-badge-table&quot;&gt;${escapeHtml(c.position || &#x27;전기&#x27;)}&lt;/span&gt;&lt;/td&gt;
       &lt;td class=&quot;name-cell&quot;&gt;${escapeHtml(c.candidateName)}&lt;/td&gt;
       &lt;td class=&quot;email-cell&quot;&gt;${escapeHtml(c.candidateEmail)}&lt;/td&gt;
@@ -2322,6 +2341,70 @@ function renderTable(){
     &lt;/tr&gt;
   `;
   }).join(&#x27;&#x27;);
+
+  updateBulkDeleteButton();
+  syncSelectAllCheckbox(filtered);
+}
+
+function toggleRowSelect(key, checked){
+  if(checked) selectedKeys.add(key);
+  else selectedKeys.delete(key);
+  updateBulkDeleteButton();
+  syncSelectAllCheckbox(getFilteredCandidates());
+}
+
+function toggleSelectAll(checked){
+  const filtered = getFilteredCandidates();
+  if(checked){
+    filtered.forEach(c=&gt; selectedKeys.add(c._key));
+  } else {
+    filtered.forEach(c=&gt; selectedKeys.delete(c._key));
+  }
+  renderTable();
+}
+
+function syncSelectAllCheckbox(filtered){
+  const el = document.getElementById(&#x27;select-all-checkbox&#x27;);
+  if(!el) return;
+  const allSelected = filtered.length &gt; 0 &amp;&amp; filtered.every(c=&gt;selectedKeys.has(c._key));
+  el.checked = allSelected;
+}
+
+function updateBulkDeleteButton(){
+  const btn = document.getElementById(&#x27;bulk-delete-btn&#x27;);
+  let countEl = document.getElementById(&#x27;selected-count-num&#x27;);
+  // 삭제 진행 중 textContent로 버튼 내부 구조가 일시적으로 사라졌을 수 있으므로 복원
+  if(!countEl){
+    btn.innerHTML = &#x27;🗑 선택 삭제 (&lt;span id=&quot;selected-count-num&quot;&gt;0&lt;/span&gt;)&#x27;;
+    countEl = document.getElementById(&#x27;selected-count-num&#x27;);
+  }
+  countEl.textContent = selectedKeys.size;
+  btn.disabled = selectedKeys.size === 0;
+  btn.style.opacity = selectedKeys.size === 0 ? &#x27;.4&#x27; : &#x27;1&#x27;;
+}
+
+async function bulkDeleteSelected(){
+  if(selectedKeys.size === 0) return;
+  const names = candidates.filter(c=&gt;selectedKeys.has(c._key)).map(c=&gt;c.candidateName).filter(Boolean);
+  const ok = confirm(`${selectedKeys.size}명(${names.join(&#x27;, &#x27;)})의 제출 내용을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`);
+  if(!ok) return;
+
+  const keysToDelete = [...selectedKeys];
+  const btn = document.getElementById(&#x27;bulk-delete-btn&#x27;);
+  btn.disabled = true;
+  btn.dataset.originalHtml = btn.innerHTML;
+  btn.textContent = &#x27;삭제 중…&#x27;;
+
+  for(const key of keysToDelete){
+    try{
+      await window.storage.delete(key, true);
+    }catch(e){
+      console.error(&#x27;삭제 실패:&#x27;, key, e);
+    }
+  }
+
+  selectedKeys.clear();
+  await loadCandidates();
 }
 
 function render(){
@@ -2706,9 +2789,15 @@ loadCandidates();
   .iv-chip{
     background:var(--card); border:1.5px solid var(--line); border-radius:8px;
     padding:9px 13px; font-size:13px; font-weight:600; cursor:pointer; color:var(--slate);
+    display:flex; align-items:center; gap:8px;
   }
   .iv-chip.active{background:var(--navy);color:var(--cream);border-color:var(--navy);}
   .iv-chip .cnt{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:10.5px;margin-left:5px;opacity:.8;}
+  .iv-chip-delete{
+    font-size:11px; color:var(--warn); cursor:pointer; padding:2px 4px; border-radius:4px; opacity:.7;
+  }
+  .iv-chip-delete:hover{opacity:1; background:rgba(166,67,44,0.12);}
+  .iv-chip.active .iv-chip-delete{color:var(--cream); opacity:.85;}
 
   /* ===== Login overlay (취합보기 전용) ===== */
   #dc-login-overlay{
@@ -2816,6 +2905,7 @@ loadCandidates();
       &lt;div class=&quot;view-toggle&quot; id=&quot;view-toggle&quot;&gt;
         &lt;div class=&quot;vtbtn active&quot; data-view=&quot;overlap&quot; onclick=&quot;setHrView(&#x27;overlap&#x27;)&quot;&gt;겹침 보기&lt;/div&gt;
         &lt;div class=&quot;vtbtn&quot; data-view=&quot;byperson&quot; onclick=&quot;setHrView(&#x27;byperson&#x27;)&quot;&gt;면접관별 보기&lt;/div&gt;
+        &lt;div class=&quot;vtbtn&quot; data-view=&quot;manage&quot; onclick=&quot;setHrView(&#x27;manage&#x27;)&quot;&gt;제출 목록 관리&lt;/div&gt;
       &lt;/div&gt;
       &lt;div class=&quot;legend&quot; id=&quot;legend&quot;&gt;&lt;/div&gt;
     &lt;/div&gt;
@@ -2825,6 +2915,13 @@ loadCandidates();
     &lt;/div&gt;
 
     &lt;div id=&quot;byperson-chips&quot; class=&quot;interviewer-chips&quot; style=&quot;display:none;&quot;&gt;&lt;/div&gt;
+
+    &lt;div id=&quot;manage-toolbar&quot; style=&quot;display:none;margin-bottom:14px;&quot;&gt;
+      &lt;button class=&quot;refresh-btn&quot; id=&quot;iv-bulk-delete-btn&quot; onclick=&quot;bulkDeleteInterviewers()&quot; disabled
+        style=&quot;background:var(--warn);border-color:var(--warn);color:white;font-weight:700;opacity:.4;&quot;&gt;
+        🗑 선택 삭제 (&lt;span id=&quot;iv-selected-count-num&quot;&gt;0&lt;/span&gt;)
+      &lt;/button&gt;
+    &lt;/div&gt;
 
     &lt;div id=&quot;grid-container&quot;&gt;&lt;/div&gt;
   &lt;/div&gt;
@@ -2939,6 +3036,7 @@ let interviewers = [];
 let currentHrView = &#x27;overlap&#x27;;
 let activeInterviewer = null;
 let overlapAuthChecked = false;
+let selectedInterviewerNames = new Set();
 
 function checkOverlapAuth(){
   const overlay = document.getElementById(&#x27;dc-login-overlay&#x27;);
@@ -3002,6 +3100,7 @@ function setHrView(v){
     el.classList.toggle(&#x27;active&#x27;, el.dataset.view === v);
   });
   document.getElementById(&#x27;byperson-chips&#x27;).style.display = (v === &#x27;byperson&#x27;) ? &#x27;flex&#x27; : &#x27;none&#x27;;
+  document.getElementById(&#x27;manage-toolbar&#x27;).style.display = (v === &#x27;manage&#x27;) ? &#x27;block&#x27; : &#x27;none&#x27;;
   renderHr();
 }
 
@@ -3071,10 +3170,29 @@ function renderByPersonChips(){
     activeInterviewer = interviewers[0].interviewer_name;
   }
   chipsEl.innerHTML = interviewers.map(iv=&gt;`
-    &lt;div class=&quot;iv-chip ${iv.interviewer_name===activeInterviewer?&#x27;active&#x27;:&#x27;&#x27;}&quot; onclick=&quot;selectInterviewer(&#x27;${escapeHtml(iv.interviewer_name)}&#x27;)&quot;&gt;
-      ${escapeHtml(iv.interviewer_name)}&lt;span class=&quot;cnt&quot;&gt;${(iv.available_slots||[]).length}개&lt;/span&gt;
+    &lt;div class=&quot;iv-chip ${iv.interviewer_name===activeInterviewer?&#x27;active&#x27;:&#x27;&#x27;}&quot;&gt;
+      &lt;span onclick=&quot;selectInterviewer(&#x27;${escapeHtml(iv.interviewer_name)}&#x27;)&quot; style=&quot;cursor:pointer;&quot;&gt;
+        ${escapeHtml(iv.interviewer_name)}&lt;span class=&quot;cnt&quot;&gt;${(iv.available_slots||[]).length}개&lt;/span&gt;
+      &lt;/span&gt;
+      &lt;span class=&quot;iv-chip-delete&quot; onclick=&quot;deleteInterviewerSlot(&#x27;${escapeHtml(iv.interviewer_name)}&#x27;, event)&quot; title=&quot;삭제&quot;&gt;✕&lt;/span&gt;
     &lt;/div&gt;
   `).join(&#x27;&#x27;);
+}
+
+async function deleteInterviewerSlot(name, evt){
+  if(evt) evt.stopPropagation();
+  const ok = confirm(`&#x27;${name}&#x27; 님의 제출 일정을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`);
+  if(!ok) return;
+
+  try{
+    const { error } = await window.__sb.from(&#x27;interviewer_slots&#x27;).delete().eq(&#x27;interviewer_name&#x27;, name);
+    if(error){ throw error; }
+    if(activeInterviewer === name) activeInterviewer = null;
+    await loadInterviewerSlots();
+  }catch(e){
+    console.error(&#x27;면접관 일정 삭제 실패:&#x27;, e);
+    alert(&#x27;삭제 중 오류가 발생했습니다. 다시 시도해주세요.&#x27;);
+  }
 }
 
 function selectInterviewer(name){
@@ -3112,16 +3230,105 @@ function renderHr(){
     document.getElementById(&#x27;grid-container&#x27;).innerHTML = &#x27;&#x27;;
     document.getElementById(&#x27;byperson-chips&#x27;).innerHTML = &#x27;&#x27;;
     document.getElementById(&#x27;legend&#x27;).innerHTML = &#x27;&#x27;;
+    updateIvBulkDeleteButton();
     return;
   }
   emptyState.style.display = &#x27;none&#x27;;
 
   if(currentHrView === &#x27;overlap&#x27;){
     renderOverlapGrid();
-  } else {
+  } else if(currentHrView === &#x27;byperson&#x27;){
     renderByPersonChips();
     renderByPersonGrid();
+  } else if(currentHrView === &#x27;manage&#x27;){
+    renderManageList();
   }
+}
+
+/* ============ 제출 목록 관리 (체크박스 + 일괄삭제) ============ */
+function renderManageList(){
+  const validNames = new Set(interviewers.map(iv=&gt;iv.interviewer_name));
+  [...selectedInterviewerNames].forEach(n=&gt;{ if(!validNames.has(n)) selectedInterviewerNames.delete(n); });
+
+  const rows = interviewers.map(iv=&gt;{
+    const checked = selectedInterviewerNames.has(iv.interviewer_name) ? &#x27;checked&#x27; : &#x27;&#x27;;
+    return `
+    &lt;div style=&quot;display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--line);border-radius:9px;background:var(--card);margin-bottom:8px;&quot;&gt;
+      &lt;input type=&quot;checkbox&quot; class=&quot;iv-row-checkbox&quot; data-name=&quot;${escapeHtml(iv.interviewer_name)}&quot; ${checked}
+        onchange=&quot;toggleInterviewerSelect(&#x27;${escapeHtml(iv.interviewer_name)}&#x27;, this.checked)&quot;&gt;
+      &lt;div style=&quot;flex:1;&quot;&gt;
+        &lt;div style=&quot;font-weight:700;font-size:14px;color:var(--ink);&quot;&gt;${escapeHtml(iv.interviewer_name)}&lt;/div&gt;
+        &lt;div class=&quot;mono&quot; style=&quot;font-size:11.5px;color:var(--slate);margin-top:2px;&quot;&gt;제출 시간 ${(iv.available_slots||[]).length}개&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;button class=&quot;mini-btn&quot; style=&quot;color:var(--warn);border-color:var(--warn);&quot; onclick=&quot;deleteInterviewerSlot(&#x27;${escapeHtml(iv.interviewer_name)}&#x27;)&quot;&gt;삭제&lt;/button&gt;
+    &lt;/div&gt;`;
+  }).join(&#x27;&#x27;);
+
+  const selectAllChecked = interviewers.length &gt; 0 &amp;&amp; interviewers.every(iv=&gt;selectedInterviewerNames.has(iv.interviewer_name));
+  document.getElementById(&#x27;grid-container&#x27;).innerHTML = `
+    &lt;div style=&quot;margin-bottom:10px;display:flex;align-items:center;gap:8px;&quot;&gt;
+      &lt;input type=&quot;checkbox&quot; id=&quot;iv-select-all-checkbox&quot; ${selectAllChecked?&#x27;checked&#x27;:&#x27;&#x27;} onchange=&quot;toggleSelectAllInterviewers(this.checked)&quot;&gt;
+      &lt;label for=&quot;iv-select-all-checkbox&quot; style=&quot;font-size:12.5px;color:var(--slate);cursor:pointer;&quot;&gt;전체 선택&lt;/label&gt;
+    &lt;/div&gt;
+    ${rows}
+  `;
+  updateIvBulkDeleteButton();
+}
+
+function toggleInterviewerSelect(name, checked){
+  if(checked) selectedInterviewerNames.add(name);
+  else selectedInterviewerNames.delete(name);
+  updateIvBulkDeleteButton();
+  const allEl = document.getElementById(&#x27;iv-select-all-checkbox&#x27;);
+  if(allEl){
+    allEl.checked = interviewers.length &gt; 0 &amp;&amp; interviewers.every(iv=&gt;selectedInterviewerNames.has(iv.interviewer_name));
+  }
+}
+
+function toggleSelectAllInterviewers(checked){
+  if(checked){
+    interviewers.forEach(iv=&gt; selectedInterviewerNames.add(iv.interviewer_name));
+  } else {
+    selectedInterviewerNames.clear();
+  }
+  renderManageList();
+}
+
+function updateIvBulkDeleteButton(){
+  const btn = document.getElementById(&#x27;iv-bulk-delete-btn&#x27;);
+  if(!btn) return;
+  let countEl = document.getElementById(&#x27;iv-selected-count-num&#x27;);
+  if(!countEl){
+    btn.innerHTML = &#x27;🗑 선택 삭제 (&lt;span id=&quot;iv-selected-count-num&quot;&gt;0&lt;/span&gt;)&#x27;;
+    countEl = document.getElementById(&#x27;iv-selected-count-num&#x27;);
+  }
+  countEl.textContent = selectedInterviewerNames.size;
+  btn.disabled = selectedInterviewerNames.size === 0;
+  btn.style.opacity = selectedInterviewerNames.size === 0 ? &#x27;.4&#x27; : &#x27;1&#x27;;
+}
+
+async function bulkDeleteInterviewers(){
+  if(selectedInterviewerNames.size === 0) return;
+  const names = [...selectedInterviewerNames];
+  const ok = confirm(`${names.length}명(${names.join(&#x27;, &#x27;)})의 제출 일정을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`);
+  if(!ok) return;
+
+  const btn = document.getElementById(&#x27;iv-bulk-delete-btn&#x27;);
+  btn.disabled = true;
+  btn.dataset.originalHtml = btn.innerHTML;
+  btn.textContent = &#x27;삭제 중…&#x27;;
+
+  for(const name of names){
+    try{
+      const { error } = await window.__sb.from(&#x27;interviewer_slots&#x27;).delete().eq(&#x27;interviewer_name&#x27;, name);
+      if(error){ console.error(&#x27;삭제 실패:&#x27;, name, error); }
+    }catch(e){
+      console.error(&#x27;삭제 실패:&#x27;, name, e);
+    }
+  }
+
+  selectedInterviewerNames.clear();
+  await loadInterviewerSlots();
 }
 &lt;/script&gt;
 
