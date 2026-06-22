@@ -616,6 +616,10 @@
             &lt;div&gt;&lt;div class=&quot;pname&quot;&gt;시스템직무&lt;/div&gt;&lt;div class=&quot;pdesc&quot;&gt;IT 인프라·클라우드·운영&lt;/div&gt;&lt;/div&gt;
             &lt;div class=&quot;pcheck&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
           &lt;/div&gt;
+          &lt;div class=&quot;pos-card&quot; data-pos=&quot;건축&quot; onclick=&quot;selectPosition(&#x27;건축&#x27;)&quot;&gt;
+            &lt;div&gt;&lt;div class=&quot;pname&quot;&gt;건축직무&lt;/div&gt;&lt;div class=&quot;pdesc&quot;&gt;건축 설계·인허가·시공관리&lt;/div&gt;&lt;/div&gt;
+            &lt;div class=&quot;pcheck&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+          &lt;/div&gt;
         &lt;/div&gt;
       &lt;/div&gt;
 
@@ -786,7 +790,7 @@ const HR_EMAILS = [&quot;sujin.park0@sk.com&quot;, &quot;sh.leee@sk.com&quot;, &
 const STORAGE_PREFIX = &quot;dc_prescreen&quot;; // 면접관/HR 대시보드와 공유하는 storage key prefix
 
 /* ============ POSITION-SPECIFIC QUESTIONS (Q1~Q6) ============ */
-const POSITIONS = {&quot;전기&quot;: {&quot;position&quot;: &quot;전기&quot;, &quot;positionLabel&quot;: &quot;전기직무&quot;, &quot;questions&quot;: [{&quot;id&quot;: &quot;q1&quot;, &quot;qnum&quot;: &quot;Q1&quot;, &quot;type&quot;: &quot;text&quot;, &quot;title&quot;: &quot;가장 최근 수행한 프로젝트명을 적어주세요.&quot;, &quot;hint&quot;: &quot;지원서에 기재하신 프로젝트 중 하나를 적어주시면 됩니다. (예: 카타르 LNG Project)&quot;, &quot;placeholder&quot;: &quot;프로젝트명 입력&quot;, &quot;maxlength&quot;: 40}, {&quot;id&quot;: &quot;q2&quot;, &quot;qnum&quot;: &quot;Q2&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;그 프로젝트에서, 본인이 직접 의사결정한 부분과 상급자·타 부서가 결정한 부분을 구분해서 적어주세요.&quot;, &quot;hintEchoProject&quot;: true, &quot;placeholder&quot;: &quot;예: 차단기 용량은 ETAP 해석 결과로 제가 직접 산정했고, 최종 Vendor 선정은 PM 협의로 결정되었습니다.&quot;, &quot;maxlength&quot;: 120, &quot;recommended&quot;: 80}, {&quot;id&quot;: &quot;q3&quot;, &quot;qnum&quot;: &quot;Q3&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;같은 프로젝트에서, 가장 어려웠던 기술적 이슈 1개를 구체적 수치나 현상과 함께 적어주세요.&quot;, &quot;hintEchoProject&quot;: true, &quot;placeholder&quot;: &quot;예: 22kV 2회선 무정전 인입 작업 중 절연저항이 기준치(1000MΩ) 이하로 측정되어 케이블 교체가 필요했던 상황&quot;, &quot;maxlength&quot;: 120, &quot;recommended&quot;: 80}, {&quot;id&quot;: &quot;q4&quot;, &quot;qnum&quot;: &quot;Q4&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;실제로 수행해본 업무의 범위를 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다. 실제로 수행해본 업무의 범위만 체크해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;design&quot;, &quot;label&quot;: &quot;설계 (Design)&quot;}, {&quot;val&quot;: &quot;procurement&quot;, &quot;label&quot;: &quot;구매 / Vendor 기술검토&quot;}, {&quot;val&quot;: &quot;construction&quot;, &quot;label&quot;: &quot;시공관리 (Construction)&quot;}, {&quot;val&quot;: &quot;commissioning&quot;, &quot;label&quot;: &quot;시운전 (FAT / SAT / Cx)&quot;}, {&quot;val&quot;: &quot;operation&quot;, &quot;label&quot;: &quot;운영 (Commissioning 이후)&quot;}]}, {&quot;id&quot;: &quot;q5&quot;, &quot;qnum&quot;: &quot;Q5&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;운영 중인 DC에서 무중단이 필수인 전력설비 교체작업을 맡았다면, 가장 먼저 할 일은?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;영향범위 시뮬레이션 (부하·전원경로 분석)&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;백업 경로 사전 확보&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;관련 부서·고객 사전 공지&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;작업 매뉴얼(MOP) 재검토&quot;}]}, {&quot;id&quot;: &quot;q6&quot;, &quot;qnum&quot;: &quot;Q6&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;시공사·벤더와 의견이 충돌하는 상황에서, 본인의 우선순위는?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;기술기준 우선&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;일정준수 우선&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;비용효율 우선&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;현장협의체 합의 우선&quot;}]}]}, &quot;기계&quot;: {&quot;position&quot;: &quot;기계&quot;, &quot;positionLabel&quot;: &quot;기계직무&quot;, &quot;questions&quot;: [{&quot;id&quot;: &quot;q1&quot;, &quot;qnum&quot;: &quot;Q1&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;데이터센터 냉각 시스템 경험 분야를 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다. 실제로 경험한 분야만 체크해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;chiller&quot;, &quot;label&quot;: &quot;Chiller&quot;}, {&quot;val&quot;: &quot;crac_crah&quot;, &quot;label&quot;: &quot;CRAC / CRAH&quot;}, {&quot;val&quot;: &quot;free_cooling&quot;, &quot;label&quot;: &quot;Free Cooling&quot;}, {&quot;val&quot;: &quot;piping&quot;, &quot;label&quot;: &quot;냉각수 배관&quot;}, {&quot;val&quot;: &quot;liquid_cooling&quot;, &quot;label&quot;: &quot;액침냉각 (Liquid Cooling)&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q2&quot;, &quot;qnum&quot;: &quot;Q2&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;담당하신 데이터센터의 규모는 어느 정도였나요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;10MW 미만&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;10~50MW&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;50~100MW&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;100MW 이상&quot;}, {&quot;val&quot;: &quot;E&quot;, &quot;label&quot;: &quot;해당없음&quot;}]}, {&quot;id&quot;: &quot;q3&quot;, &quot;qnum&quot;: &quot;Q3&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;공조 방식 설계·운영 경험은 어느 쪽인가요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;수냉식 (Water-cooled)&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;공냉식 (Air-cooled)&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;둘 다&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q4&quot;, &quot;qnum&quot;: &quot;Q4&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;Cx(Commissioning) 참여 레벨은 어디까지였나요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;L1~L2&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;L3~L4&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;L5~L6&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;참여경험없음&quot;}]}, {&quot;id&quot;: &quot;q5&quot;, &quot;qnum&quot;: &quot;Q5&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;담당하신 데이터센터 냉각·공조 프로젝트 중 가장 어려웠던 기술적 이슈와 해결 방법을 적어주세요.&quot;, &quot;hint&quot;: &quot;구체적인 수치나 현상을 포함해 적어주시면 좋습니다.&quot;, &quot;placeholder&quot;: &quot;예: 여름철 외기온 38도 조건에서 Free Cooling 전환 실패로 CRAH 입구온도가 기준치를 초과했던 상황과 해결 과정&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}, {&quot;id&quot;: &quot;q6&quot;, &quot;qnum&quot;: &quot;Q6&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;PUE 개선 또는 에너지 효율화 프로젝트를 주도하거나 참여한 경험이 있다면, 목표·방법·결과를 적어주세요.&quot;, &quot;hint&quot;: &quot;경험이 없다면 &#x27;경험없음&#x27;으로 적어주셔도 됩니다.&quot;, &quot;placeholder&quot;: &quot;예: PUE 1.5 → 1.35 목표로 Free Cooling 가동시간 확대, 결과적으로 연간 전력비 12% 절감&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}]}, &quot;시스템&quot;: {&quot;position&quot;: &quot;시스템&quot;, &quot;positionLabel&quot;: &quot;시스템직무&quot;, &quot;questions&quot;: [{&quot;id&quot;: &quot;q1&quot;, &quot;qnum&quot;: &quot;Q1&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;데이터센터 인프라 담당 영역을 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다. 실제로 담당한 영역만 체크해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;server&quot;, &quot;label&quot;: &quot;서버&quot;}, {&quot;val&quot;: &quot;network&quot;, &quot;label&quot;: &quot;네트워크&quot;}, {&quot;val&quot;: &quot;storage&quot;, &quot;label&quot;: &quot;스토리지&quot;}, {&quot;val&quot;: &quot;virtualization&quot;, &quot;label&quot;: &quot;가상화&quot;}, {&quot;val&quot;: &quot;monitoring&quot;, &quot;label&quot;: &quot;모니터링/관제&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q2&quot;, &quot;qnum&quot;: &quot;Q2&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;운영 경험이 있는 데이터센터 유형은 무엇인가요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;Hyperscale&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;Colocation&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;Enterprise (자체 IDC)&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q3&quot;, &quot;qnum&quot;: &quot;Q3&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;클라우드 연계 운영 경험을 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;aws&quot;, &quot;label&quot;: &quot;AWS&quot;}, {&quot;val&quot;: &quot;azure&quot;, &quot;label&quot;: &quot;Azure&quot;}, {&quot;val&quot;: &quot;gcp&quot;, &quot;label&quot;: &quot;GCP&quot;}, {&quot;val&quot;: &quot;onprem_only&quot;, &quot;label&quot;: &quot;온프레미스만&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q4&quot;, &quot;qnum&quot;: &quot;Q4&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;장애대응 체계 참여 경험을 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;spof&quot;, &quot;label&quot;: &quot;SPOF 분석&quot;}, {&quot;val&quot;: &quot;rca&quot;, &quot;label&quot;: &quot;RCA (원인분석)&quot;}, {&quot;val&quot;: &quot;monitoring_build&quot;, &quot;label&quot;: &quot;모니터링 체계 구축&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q5&quot;, &quot;qnum&quot;: &quot;Q5&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;운영 중 발생한 주요 장애 사례와 대응 경험을 적어주세요.&quot;, &quot;hint&quot;: &quot;구체적인 수치나 현상을 포함해 적어주시면 좋습니다.&quot;, &quot;placeholder&quot;: &quot;예: 스토리지 컨트롤러 장애로 인한 서비스 중단(15분) 발생 시, RCA 진행 후 이중화 구조로 개선&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}, {&quot;id&quot;: &quot;q6&quot;, &quot;qnum&quot;: &quot;Q6&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;CSP(클라우드 서비스 제공자) 감사 대응 또는 컴플라이언스 관련 프로젝트 경험이 있다면, 역할과 결과를 적어주세요.&quot;, &quot;hint&quot;: &quot;경험이 없다면 &#x27;경험없음&#x27;으로 적어주셔도 됩니다.&quot;, &quot;placeholder&quot;: &quot;예: AWS 감사 대응 시 보안그룹 정책 정비 담당, 지적사항 0건으로 완료&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}]}};
+const POSITIONS = {&quot;전기&quot;: {&quot;position&quot;: &quot;전기&quot;, &quot;positionLabel&quot;: &quot;전기직무&quot;, &quot;questions&quot;: [{&quot;id&quot;: &quot;q1&quot;, &quot;qnum&quot;: &quot;Q1&quot;, &quot;type&quot;: &quot;text&quot;, &quot;title&quot;: &quot;가장 최근 수행한 프로젝트명을 적어주세요.&quot;, &quot;hint&quot;: &quot;지원서에 기재하신 프로젝트 중 하나를 적어주시면 됩니다. (예: 카타르 LNG Project)&quot;, &quot;placeholder&quot;: &quot;프로젝트명 입력&quot;, &quot;maxlength&quot;: 40}, {&quot;id&quot;: &quot;q2&quot;, &quot;qnum&quot;: &quot;Q2&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;그 프로젝트에서, 본인이 직접 의사결정한 부분과 상급자·타 부서가 결정한 부분을 구분해서 적어주세요.&quot;, &quot;hintEchoProject&quot;: true, &quot;placeholder&quot;: &quot;예: 차단기 용량은 ETAP 해석 결과로 제가 직접 산정했고, 최종 Vendor 선정은 PM 협의로 결정되었습니다.&quot;, &quot;maxlength&quot;: 120, &quot;recommended&quot;: 80}, {&quot;id&quot;: &quot;q3&quot;, &quot;qnum&quot;: &quot;Q3&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;같은 프로젝트에서, 가장 어려웠던 기술적 이슈 1개를 구체적 수치나 현상과 함께 적어주세요.&quot;, &quot;hintEchoProject&quot;: true, &quot;placeholder&quot;: &quot;예: 22kV 2회선 무정전 인입 작업 중 절연저항이 기준치(1000MΩ) 이하로 측정되어 케이블 교체가 필요했던 상황&quot;, &quot;maxlength&quot;: 120, &quot;recommended&quot;: 80}, {&quot;id&quot;: &quot;q4&quot;, &quot;qnum&quot;: &quot;Q4&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;실제로 수행해본 업무의 범위를 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다. 실제로 수행해본 업무의 범위만 체크해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;design&quot;, &quot;label&quot;: &quot;설계 (Design)&quot;}, {&quot;val&quot;: &quot;procurement&quot;, &quot;label&quot;: &quot;구매 / Vendor 기술검토&quot;}, {&quot;val&quot;: &quot;construction&quot;, &quot;label&quot;: &quot;시공관리 (Construction)&quot;}, {&quot;val&quot;: &quot;commissioning&quot;, &quot;label&quot;: &quot;시운전 (FAT / SAT / Cx)&quot;}, {&quot;val&quot;: &quot;operation&quot;, &quot;label&quot;: &quot;운영 (Commissioning 이후)&quot;}]}, {&quot;id&quot;: &quot;q5&quot;, &quot;qnum&quot;: &quot;Q5&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;운영 중인 DC에서 무중단이 필수인 전력설비 교체작업을 맡았다면, 가장 먼저 할 일은?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;영향범위 시뮬레이션 (부하·전원경로 분석)&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;백업 경로 사전 확보&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;관련 부서·고객 사전 공지&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;작업 매뉴얼(MOP) 재검토&quot;}]}, {&quot;id&quot;: &quot;q6&quot;, &quot;qnum&quot;: &quot;Q6&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;시공사·벤더와 의견이 충돌하는 상황에서, 본인의 우선순위는?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;기술기준 우선&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;일정준수 우선&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;비용효율 우선&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;현장협의체 합의 우선&quot;}]}]}, &quot;기계&quot;: {&quot;position&quot;: &quot;기계&quot;, &quot;positionLabel&quot;: &quot;기계직무&quot;, &quot;questions&quot;: [{&quot;id&quot;: &quot;q1&quot;, &quot;qnum&quot;: &quot;Q1&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;데이터센터 냉각 시스템 경험 분야를 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다. 실제로 경험한 분야만 체크해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;chiller&quot;, &quot;label&quot;: &quot;Chiller&quot;}, {&quot;val&quot;: &quot;crac_crah&quot;, &quot;label&quot;: &quot;CRAC / CRAH&quot;}, {&quot;val&quot;: &quot;free_cooling&quot;, &quot;label&quot;: &quot;Free Cooling&quot;}, {&quot;val&quot;: &quot;piping&quot;, &quot;label&quot;: &quot;냉각수 배관&quot;}, {&quot;val&quot;: &quot;liquid_cooling&quot;, &quot;label&quot;: &quot;액침냉각 (Liquid Cooling)&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q2&quot;, &quot;qnum&quot;: &quot;Q2&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;담당하신 데이터센터의 규모는 어느 정도였나요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;10MW 미만&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;10~50MW&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;50~100MW&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;100MW 이상&quot;}, {&quot;val&quot;: &quot;E&quot;, &quot;label&quot;: &quot;해당없음&quot;}]}, {&quot;id&quot;: &quot;q3&quot;, &quot;qnum&quot;: &quot;Q3&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;공조 방식 설계·운영 경험은 어느 쪽인가요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;수냉식 (Water-cooled)&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;공냉식 (Air-cooled)&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;둘 다&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q4&quot;, &quot;qnum&quot;: &quot;Q4&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;Cx(Commissioning) 참여 레벨은 어디까지였나요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;L1~L2&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;L3~L4&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;L5~L6&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;참여경험없음&quot;}]}, {&quot;id&quot;: &quot;q5&quot;, &quot;qnum&quot;: &quot;Q5&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;담당하신 데이터센터 냉각·공조 프로젝트 중 가장 어려웠던 기술적 이슈와 해결 방법을 적어주세요.&quot;, &quot;hint&quot;: &quot;구체적인 수치나 현상을 포함해 적어주시면 좋습니다.&quot;, &quot;placeholder&quot;: &quot;예: 여름철 외기온 38도 조건에서 Free Cooling 전환 실패로 CRAH 입구온도가 기준치를 초과했던 상황과 해결 과정&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}, {&quot;id&quot;: &quot;q6&quot;, &quot;qnum&quot;: &quot;Q6&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;PUE 개선 또는 에너지 효율화 프로젝트를 주도하거나 참여한 경험이 있다면, 목표·방법·결과를 적어주세요.&quot;, &quot;hint&quot;: &quot;경험이 없다면 &#x27;경험없음&#x27;으로 적어주셔도 됩니다.&quot;, &quot;placeholder&quot;: &quot;예: PUE 1.5 → 1.35 목표로 Free Cooling 가동시간 확대, 결과적으로 연간 전력비 12% 절감&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}]}, &quot;시스템&quot;: {&quot;position&quot;: &quot;시스템&quot;, &quot;positionLabel&quot;: &quot;시스템직무&quot;, &quot;questions&quot;: [{&quot;id&quot;: &quot;q1&quot;, &quot;qnum&quot;: &quot;Q1&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;데이터센터 인프라 담당 영역을 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다. 실제로 담당한 영역만 체크해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;server&quot;, &quot;label&quot;: &quot;서버&quot;}, {&quot;val&quot;: &quot;network&quot;, &quot;label&quot;: &quot;네트워크&quot;}, {&quot;val&quot;: &quot;storage&quot;, &quot;label&quot;: &quot;스토리지&quot;}, {&quot;val&quot;: &quot;virtualization&quot;, &quot;label&quot;: &quot;가상화&quot;}, {&quot;val&quot;: &quot;monitoring&quot;, &quot;label&quot;: &quot;모니터링/관제&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q2&quot;, &quot;qnum&quot;: &quot;Q2&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;운영 경험이 있는 데이터센터 유형은 무엇인가요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;Hyperscale&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;Colocation&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;Enterprise (자체 IDC)&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q3&quot;, &quot;qnum&quot;: &quot;Q3&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;클라우드 연계 운영 경험을 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;aws&quot;, &quot;label&quot;: &quot;AWS&quot;}, {&quot;val&quot;: &quot;azure&quot;, &quot;label&quot;: &quot;Azure&quot;}, {&quot;val&quot;: &quot;gcp&quot;, &quot;label&quot;: &quot;GCP&quot;}, {&quot;val&quot;: &quot;onprem_only&quot;, &quot;label&quot;: &quot;온프레미스만&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q4&quot;, &quot;qnum&quot;: &quot;Q4&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;장애대응 체계 참여 경험을 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;spof&quot;, &quot;label&quot;: &quot;SPOF 분석&quot;}, {&quot;val&quot;: &quot;rca&quot;, &quot;label&quot;: &quot;RCA (원인분석)&quot;}, {&quot;val&quot;: &quot;monitoring_build&quot;, &quot;label&quot;: &quot;모니터링 체계 구축&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q5&quot;, &quot;qnum&quot;: &quot;Q5&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;운영 중 발생한 주요 장애 사례와 대응 경험을 적어주세요.&quot;, &quot;hint&quot;: &quot;구체적인 수치나 현상을 포함해 적어주시면 좋습니다.&quot;, &quot;placeholder&quot;: &quot;예: 스토리지 컨트롤러 장애로 인한 서비스 중단(15분) 발생 시, RCA 진행 후 이중화 구조로 개선&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}, {&quot;id&quot;: &quot;q6&quot;, &quot;qnum&quot;: &quot;Q6&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;CSP(클라우드 서비스 제공자) 감사 대응 또는 컴플라이언스 관련 프로젝트 경험이 있다면, 역할과 결과를 적어주세요.&quot;, &quot;hint&quot;: &quot;경험이 없다면 &#x27;경험없음&#x27;으로 적어주셔도 됩니다.&quot;, &quot;placeholder&quot;: &quot;예: AWS 감사 대응 시 보안그룹 정책 정비 담당, 지적사항 0건으로 완료&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}]}, &quot;건축&quot;: {&quot;position&quot;: &quot;건축&quot;, &quot;positionLabel&quot;: &quot;건축직무&quot;, &quot;questions&quot;: [{&quot;id&quot;: &quot;q1&quot;, &quot;qnum&quot;: &quot;Q1&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;데이터센터 건축 설계·시공 경험 분야를 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다. 실제로 경험한 분야만 체크해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;basic_design&quot;, &quot;label&quot;: &quot;건축 기본설계&quot;}, {&quot;val&quot;: &quot;structure_review&quot;, &quot;label&quot;: &quot;구조 설계 검토&quot;}, {&quot;val&quot;: &quot;fire_safety&quot;, &quot;label&quot;: &quot;방화/방재 설계&quot;}, {&quot;val&quot;: &quot;construction_mgmt&quot;, &quot;label&quot;: &quot;시공관리(건축)&quot;}, {&quot;val&quot;: &quot;interior_finish&quot;, &quot;label&quot;: &quot;인테리어/마감&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q2&quot;, &quot;qnum&quot;: &quot;Q2&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;담당하신 데이터센터의 규모는 어느 정도였나요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;10MW 미만&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;10~50MW&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;50~100MW&quot;}, {&quot;val&quot;: &quot;D&quot;, &quot;label&quot;: &quot;100MW 이상&quot;}, {&quot;val&quot;: &quot;E&quot;, &quot;label&quot;: &quot;해당없음&quot;}]}, {&quot;id&quot;: &quot;q3&quot;, &quot;qnum&quot;: &quot;Q3&quot;, &quot;type&quot;: &quot;single&quot;, &quot;title&quot;: &quot;건축 인허가 관련 경험은 어느 쪽인가요?&quot;, &quot;hint&quot;: &quot;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;A&quot;, &quot;label&quot;: &quot;건축 인허가 직접 수행&quot;}, {&quot;val&quot;: &quot;B&quot;, &quot;label&quot;: &quot;인허가 보조·검토만 수행&quot;}, {&quot;val&quot;: &quot;C&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q4&quot;, &quot;qnum&quot;: &quot;Q4&quot;, &quot;type&quot;: &quot;multi&quot;, &quot;title&quot;: &quot;데이터센터 특화 설계 경험을 모두 선택해주세요.&quot;, &quot;hint&quot;: &quot;중복 선택 가능합니다.&quot;, &quot;options&quot;: [{&quot;val&quot;: &quot;floor_load&quot;, &quot;label&quot;: &quot;바닥하중(중량설비) 설계&quot;}, {&quot;val&quot;: &quot;waterproof&quot;, &quot;label&quot;: &quot;방수/방진 설계&quot;}, {&quot;val&quot;: &quot;fire_compartment&quot;, &quot;label&quot;: &quot;소방/방화구획 설계&quot;}, {&quot;val&quot;: &quot;none&quot;, &quot;label&quot;: &quot;경험없음&quot;}]}, {&quot;id&quot;: &quot;q5&quot;, &quot;qnum&quot;: &quot;Q5&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;담당하신 건축 프로젝트 중 가장 어려웠던 기술적 이슈와 해결 방법을 적어주세요.&quot;, &quot;hint&quot;: &quot;구체적인 수치나 현상을 포함해 적어주시면 좋습니다.&quot;, &quot;placeholder&quot;: &quot;예: 중량설비(UPS, 배터리랙) 배치로 인한 바닥하중 기준치 초과 문제와 구조 보강 해결 과정&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}, {&quot;id&quot;: &quot;q6&quot;, &quot;qnum&quot;: &quot;Q6&quot;, &quot;type&quot;: &quot;textarea&quot;, &quot;title&quot;: &quot;인허가 또는 시공 과정에서 발생한 주요 이슈와 대응 경험을 적어주세요.&quot;, &quot;hint&quot;: &quot;경험이 없다면 &#x27;경험없음&#x27;으로 적어주셔도 됩니다.&quot;, &quot;placeholder&quot;: &quot;예: 소방 인허가 과정에서 방화구획 기준 변경 대응, 설계 변경으로 재심의 없이 통과&quot;, &quot;maxlength&quot;: 160, &quot;recommended&quot;: 100}]}};
 
 let selectedPosition = null;
 
@@ -2134,16 +2138,15 @@ loadCandidates();
           &lt;th&gt;직무&lt;/th&gt;
           &lt;th&gt;지원자&lt;/th&gt;
           &lt;th&gt;이메일&lt;/th&gt;
-          &lt;th&gt;제출일시&lt;/th&gt;
-          &lt;th&gt;1차 면접 일정&lt;/th&gt;
+          &lt;th&gt;1차면접 가능 일정&lt;/th&gt;
           &lt;th&gt;임원면접 일정&lt;/th&gt;
-          &lt;th&gt;확인필요&lt;/th&gt;
           &lt;th&gt;전형상태&lt;/th&gt;
+          &lt;th&gt;확인필요&lt;/th&gt;
           &lt;th&gt;&lt;/th&gt;
         &lt;/tr&gt;
       &lt;/thead&gt;
       &lt;tbody id=&quot;table-body&quot;&gt;
-        &lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;9&quot;&gt;아직 제출된 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;8&quot;&gt;아직 제출된 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;
       &lt;/tbody&gt;
     &lt;/table&gt;
   &lt;/div&gt;
@@ -2276,13 +2279,20 @@ function getFilteredCandidates(){
   });
 }
 
+function formatSlotText(text){
+  // 여러 면접 슬롯은 &quot; / &quot;(공백 포함)로 구분되어 저장됨.
+  // 날짜 표기(예: &quot;6/24&quot;)의 슬래시는 공백이 없으므로 그대로 보존되고,
+  // 슬롯 구분자(&quot; / &quot;)만 줄바꿈으로 변환된다.
+  return escapeHtml(text).split(&#x27; / &#x27;).join(&#x27;&lt;br&gt;&#x27;);
+}
+
 function renderTable(){
   const tbody = document.getElementById(&#x27;table-body&#x27;);
   const filtered = getFilteredCandidates();
   document.getElementById(&#x27;total-count&#x27;).textContent = candidates.length;
 
   if(filtered.length===0){
-    tbody.innerHTML = `&lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;9&quot;&gt;표시할 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;`;
+    tbody.innerHTML = `&lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;8&quot;&gt;표시할 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;`;
     return;
   }
 
@@ -2290,25 +2300,24 @@ function renderTable(){
     const needsCheck = candidateNeedsCheck(c);
     const slotText = c.cannotAttend
       ? `⚠ 참여불가 (요청: ${escapeHtml(c.altTimeRequest||&#x27;미작성&#x27;)})`
-      : escapeHtml(c.interviewSlot || &#x27;미선택&#x27;);
+      : formatSlotText(c.interviewSlot || &#x27;미선택&#x27;);
     return `
     &lt;tr&gt;
       &lt;td&gt;&lt;span class=&quot;pos-badge-table&quot;&gt;${escapeHtml(c.position || &#x27;전기&#x27;)}&lt;/span&gt;&lt;/td&gt;
       &lt;td class=&quot;name-cell&quot;&gt;${escapeHtml(c.candidateName)}&lt;/td&gt;
       &lt;td class=&quot;email-cell&quot;&gt;${escapeHtml(c.candidateEmail)}&lt;/td&gt;
-      &lt;td class=&quot;mono&quot; style=&quot;font-size:12px;color:var(--slate);&quot;&gt;${formatDate(c.submittedAt)}&lt;/td&gt;
       &lt;td class=&quot;slot-cell&quot; style=&quot;${c.cannotAttend ? &#x27;color:var(--warn);font-weight:700;&#x27; : &#x27;&#x27;}&quot;&gt;${slotText}&lt;/td&gt;
       &lt;td&gt;
         &lt;input type=&quot;text&quot; class=&quot;exec-slot-input&quot; value=&quot;${escapeHtml(c.execInterviewSlot||&#x27;&#x27;)}&quot; placeholder=&quot;예: 6/30(화) 14:00&quot;
           style=&quot;width:130px;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11.5px;padding:6px 8px;border:1.5px solid var(--line);border-radius:6px;&quot;
           onblur=&quot;updateExecSlot(&#x27;${c._key}&#x27;, this.value)&quot;&gt;
       &lt;/td&gt;
-      &lt;td&gt;${needsCheck ? &#x27;&lt;span class=&quot;flag-dot warn&quot;&gt;&lt;/span&gt;디테일 확인&#x27; : &#x27;&lt;span class=&quot;flag-dot ok&quot;&gt;&lt;/span&gt;양호&#x27;}&lt;/td&gt;
       &lt;td&gt;
         &lt;select class=&quot;status-select&quot; data-status=&quot;${c.status}&quot; onchange=&quot;updateStatus(&#x27;${c._key}&#x27;, this.value)&quot;&gt;
           ${STATUS_OPTIONS.map(s=&gt;`&lt;option value=&quot;${s}&quot; ${s===c.status?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${s}&lt;/option&gt;`).join(&#x27;&#x27;)}
         &lt;/select&gt;
       &lt;/td&gt;
+      &lt;td&gt;${needsCheck ? &#x27;&lt;span class=&quot;flag-dot warn&quot;&gt;&lt;/span&gt;디테일 확인&#x27; : &#x27;&lt;span class=&quot;flag-dot ok&quot;&gt;&lt;/span&gt;양호&#x27;}&lt;/td&gt;
       &lt;td&gt;&lt;button class=&quot;detail-btn&quot; onclick=&quot;openModal(&#x27;${c._key}&#x27;)&quot;&gt;응답보기&lt;/button&gt;&lt;/td&gt;
     &lt;/tr&gt;
   `;
@@ -2549,7 +2558,576 @@ loadCandidates();
 
     <div class="pane" id="pane-schedule">
       <div class="loading" id="load-schedule">불러오는 중…</div>
-      <iframe srcdoc="__SCHEDULE_IFRAME_PLACEHOLDER__" onload="hideLoading('load-schedule')"></iframe>
+      <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.__sb = window.supabase.createClient(&quot;https://uawgfckzghdotahrmogu.supabase.co&quot;, &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhd2dmY2t6Z2hkb3RhaHJtb2d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMDIxNDksImV4cCI6MjA5NzY3ODE0OX0.pEiP_r90DzcZHzvJ79awAqCbnZ39bov5H6rznQfgPUM&quot;);
+&lt;/script&gt;
+
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;면접 일정 — DC경력채용&lt;/title&gt;
+&lt;style&gt;
+  @import url(&#x27;https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap&#x27;);
+  :root{
+    --navy:#0F1B2E; --cream:#F7F5F0; --slate:#3D5A73; --gold:#C9A961;
+    --ink:#1A2A3D; --line:#D8D2C4; --ok:#2F6F4E; --warn:#A6432C; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:&#x27;Noto Sans KR&#x27;,sans-serif;background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .mono{font-family:&#x27;JetBrains Mono&#x27;,monospace;}
+
+  /* ===== Sub-tab bar (입력 / 취합보기) ===== */
+  .subtab-bar{
+    display:flex; gap:6px; max-width:1100px; margin:0 auto; padding:18px 20px 0;
+  }
+  .subtab{
+    padding:10px 16px; border-radius:8px 8px 0 0; cursor:pointer;
+    font-size:13.5px; font-weight:600; color:var(--slate); background:transparent;
+    border:1.5px solid transparent; border-bottom:none;
+  }
+  .subtab.active{
+    background:var(--card); color:var(--navy); border-color:var(--line);
+  }
+
+  .subview{display:none;}
+  .subview.active{display:block;}
+
+  /* ===== shared wrap ===== */
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 60px;}
+  .wrap.wide{max-width:1100px;}
+
+  .eyebrow{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;letter-spacing:.1em;color:var(--slate);margin-bottom:8px;}
+  h1{font-size:22px;margin:0 0 8px;color:var(--navy);}
+  .lead{font-size:14px;color:var(--slate);line-height:1.7;margin:0 0 22px;}
+
+  .notice{
+    background:rgba(201,169,97,0.12); border:1px solid rgba(201,169,97,0.4); border-radius:10px;
+    padding:12px 14px; font-size:13px; color:var(--ink); line-height:1.6; margin-bottom:22px;
+  }
+
+  label.flabel{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11.5px;color:var(--slate);display:block;margin-bottom:6px;}
+  input[type=&quot;text&quot;], input[type=&quot;email&quot;], input[type=&quot;password&quot;]{
+    width:100%; border:1.5px solid var(--line); background:var(--card); border-radius:9px;
+    padding:13px 14px; font-size:15px; color:var(--ink); margin-bottom:18px;
+  }
+  input[type=&quot;text&quot;]:focus, input[type=&quot;email&quot;]:focus, input[type=&quot;password&quot;]:focus{outline:none;border-color:var(--navy);}
+
+  .hint{font-size:12.5px;color:var(--slate);line-height:1.6;margin-bottom:16px;}
+
+  /* ===== Grid (shared between input form &amp; overlap dashboard) ===== */
+  .grid-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:8px;}
+  .grid{
+    display:grid;
+    grid-template-columns: 70px repeat(5, 1fr);
+    min-width:600px;
+    border:1.5px solid var(--line); border-radius:10px; overflow:hidden;
+    background:var(--card);
+  }
+  .gcell{
+    border-bottom:1px solid var(--line); border-right:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    font-size:12px; padding:8px 4px; text-align:center; min-height:42px;
+  }
+  .grid &gt; .gcell:nth-child(6n){border-right:none;}
+  .ghead{
+    background:#EFEAE0; font-family:&#x27;JetBrains Mono&#x27;,monospace; font-weight:700; color:var(--navy);
+    font-size:11px; line-height:1.4; gap:2px; padding:10px 4px;
+  }
+  .ghead .dow{font-size:13px;}
+  .gtime{
+    background:#F7F5F0; font-family:&#x27;JetBrains Mono&#x27;,monospace; color:var(--slate); font-size:11px;
+  }
+  .gslot{cursor:pointer; transition:background .12s;}
+  .gslot:hover{background:rgba(15,27,46,0.05);}
+  .gslot.selected{background:var(--navy);}
+  .gslot.selected::after{content:&#x27;✓&#x27;; color:var(--gold); font-size:14px; font-weight:700;}
+  .gcount{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-weight:700;font-size:15px;color:var(--navy);}
+  .gnames{font-size:9.5px;color:var(--slate);line-height:1.3;margin-top:2px;word-break:keep-all;}
+  @media (max-width:700px){ .gnames{display:none;} }
+
+  .toolbar-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .mini-btn{
+    background:var(--card); border:1.5px solid var(--line); border-radius:8px;
+    padding:9px 14px; font-size:12.5px; font-weight:600; color:var(--slate); cursor:pointer;
+  }
+  .mini-btn:hover{border-color:var(--slate);}
+
+  .submit-btn{
+    width:100%; background:var(--navy); color:var(--cream); border:none; border-radius:11px;
+    padding:16px; font-size:15.5px; font-weight:700; cursor:pointer; margin-top:6px;
+  }
+  .submit-btn:disabled{opacity:.45; cursor:not-allowed;}
+  .submit-btn:hover:not(:disabled){background:#16263d;}
+
+  .err{display:none;color:var(--warn);font-size:12.5px;margin-top:10px;text-align:center;}
+
+  .done-wrap{text-align:center;padding:50px 10px;}
+  .done-icon{width:56px;height:56px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;}
+  .done-wrap h2{font-size:19px;color:var(--navy);margin:0 0 8px;}
+  .done-wrap p{font-size:13.5px;color:var(--slate);line-height:1.7;}
+
+  .selected-count{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:12.5px;color:var(--navy);font-weight:700;margin-bottom:14px;}
+
+  /* ===== HR overlap view ===== */
+  .header{
+    background:var(--navy); color:var(--cream);
+    border-radius:12px; padding:22px 24px; margin-bottom:20px;
+    display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;
+  }
+  .header .eyebrow{color:var(--gold);}
+  .header h1{color:var(--cream);}
+  .header p{font-size:13px;color:#B9C3CF;margin:8px 0 0;line-height:1.6;max-width:560px;}
+  .refresh-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:var(--cream);
+    border-radius:8px;padding:9px 14px;font-size:12.5px;cursor:pointer;font-weight:600;}
+
+  .hr-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .view-toggle{display:flex;gap:6px;}
+  .vtbtn{background:var(--card);border:1.5px solid var(--line);border-radius:7px;padding:8px 14px;
+    font-size:12.5px;cursor:pointer;color:var(--slate);font-weight:600;}
+  .vtbtn.active{background:var(--navy);color:var(--cream);border-color:var(--navy);}
+
+  .legend{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--slate);flex-wrap:wrap;}
+  .legend-swatch{width:16px;height:16px;border-radius:4px;display:inline-block;border:1px solid var(--line);}
+
+  .empty-state{
+    background:var(--card); border:1.5px dashed var(--line); border-radius:12px;
+    padding:50px 24px; text-align:center; color:var(--slate); font-size:14px; line-height:1.7;
+  }
+
+  .hr-grid-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px;}
+  .hr-grid-scroll .grid{min-width:620px;border:none;}
+
+  .interviewer-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .iv-chip{
+    background:var(--card); border:1.5px solid var(--line); border-radius:8px;
+    padding:9px 13px; font-size:13px; font-weight:600; cursor:pointer; color:var(--slate);
+  }
+  .iv-chip.active{background:var(--navy);color:var(--cream);border-color:var(--navy);}
+  .iv-chip .cnt{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:10.5px;margin-left:5px;opacity:.8;}
+
+  /* ===== Login overlay (취합보기 전용) ===== */
+  #dc-login-overlay{
+    display:none; position:fixed; inset:0; z-index:9999; background:#0F1B2E;
+    align-items:center; justify-content:center; padding:20px;
+  }
+  #dc-login-overlay.visible{display:flex;}
+  #dc-login-card{
+    background:#F7F5F0; border-radius:14px; padding:30px 26px; width:100%; max-width:360px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  }
+  #dc-login-card .ll-eyebrow{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;letter-spacing:.1em;color:#C9A961;margin-bottom:8px;}
+  #dc-login-card h2{font-size:18px;color:#0F1B2E;margin:0 0 4px;}
+  #dc-login-card p.sub{font-size:12.5px;color:#3D5A73;margin:0 0 20px;line-height:1.5;}
+  #dc-login-card label{display:block;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;color:#3D5A73;margin-bottom:6px;}
+  #dc-login-card input{margin-bottom:14px;}
+  #dc-login-card button{
+    width:100%;background:#0F1B2E;color:#F7F5F0;border:none;border-radius:9px;
+    padding:14px;font-size:15px;font-weight:700;cursor:pointer;
+  }
+  #dc-login-card button:disabled{opacity:.5;cursor:not-allowed;}
+  #dc-login-err{display:none;color:#A6432C;font-size:12.5px;margin-top:4px;margin-bottom:8px;text-align:center;}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div class=&quot;subtab-bar&quot;&gt;
+  &lt;div class=&quot;subtab active&quot; data-sub=&quot;input&quot; onclick=&quot;setSubtab(&#x27;input&#x27;)&quot;&gt;📝 내 일정 입력&lt;/div&gt;
+  &lt;div class=&quot;subtab&quot; data-sub=&quot;overlap&quot; onclick=&quot;setSubtab(&#x27;overlap&#x27;)&quot;&gt;📊 전체 취합보기&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- ============ SUBVIEW: 면접관 입력 ============ --&gt;
+&lt;div class=&quot;subview active&quot; id=&quot;subview-input&quot;&gt;
+  &lt;div class=&quot;wrap&quot; id=&quot;app-input&quot;&gt;
+
+    &lt;div id=&quot;screen-form&quot;&gt;
+      &lt;div class=&quot;eyebrow&quot;&gt;SK BROADBAND · DC ENGINEERING&lt;/div&gt;
+      &lt;h1&gt;면접관 가능시간 입력&lt;/h1&gt;
+      &lt;p class=&quot;lead&quot;&gt;DC경력채용 1차 면접을 위한 가능시간을 체크해주세요. 체크하신 시간을 바탕으로 면접 일정이 조율됩니다.&lt;/p&gt;
+
+      &lt;div class=&quot;notice&quot;&gt;
+        ⏰ 대상 기간: &lt;b&gt;6월 29일(월) ~ 7월 3일(금)&lt;/b&gt;, 평일 09:00–18:00 (1시간 단위)&lt;br&gt;
+        가능한 시간을 모두 선택해주세요. 여러 개 선택할수록 일정 조율이 쉬워집니다.
+      &lt;/div&gt;
+
+      &lt;label class=&quot;flabel&quot;&gt;성명&lt;/label&gt;
+      &lt;input type=&quot;text&quot; id=&quot;interviewer-name&quot; placeholder=&quot;홍길동&quot;&gt;
+
+      &lt;div class=&quot;hint&quot;&gt;아래 그리드에서 가능한 시간을 클릭해서 선택해주세요. (다시 클릭하면 선택 해제)&lt;/div&gt;
+
+      &lt;div class=&quot;toolbar-row&quot;&gt;
+        &lt;div class=&quot;mini-btn&quot; id=&quot;select-all-btn&quot;&gt;전체 선택&lt;/div&gt;
+        &lt;div class=&quot;mini-btn&quot; id=&quot;clear-all-btn&quot;&gt;전체 해제&lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;selected-count&quot; id=&quot;selected-count&quot;&gt;선택됨: 0개&lt;/div&gt;
+
+      &lt;div class=&quot;grid-scroll&quot;&gt;
+        &lt;div class=&quot;grid&quot; id=&quot;slot-grid&quot;&gt;&lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;button class=&quot;submit-btn&quot; id=&quot;submit-btn&quot; onclick=&quot;submitSlots()&quot;&gt;제출하기&lt;/button&gt;
+      &lt;div class=&quot;err&quot; id=&quot;form-err&quot;&gt;성명을 입력하고, 가능한 시간을 1개 이상 선택해주세요.&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div id=&quot;screen-done&quot; style=&quot;display:none;&quot;&gt;
+      &lt;div class=&quot;done-wrap&quot;&gt;
+        &lt;div class=&quot;done-icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; width=&quot;26&quot; height=&quot;26&quot;&gt;&lt;path d=&quot;M5 13l4 4L19 7&quot; stroke=&quot;#C9A961&quot; stroke-width=&quot;2.4&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;h2&gt;제출되었습니다&lt;/h2&gt;
+        &lt;p&gt;제출하신 가능시간은 HR 담당자에게 전달되며,&lt;br&gt;면접 일정 조율에 활용됩니다.&lt;br&gt;일정을 다시 수정하고 싶으시면 같은 이름으로 재제출해주세요.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- ============ SUBVIEW: HR 취합보기 (로그인 필요) ============ --&gt;
+&lt;div class=&quot;subview&quot; id=&quot;subview-overlap&quot;&gt;
+
+  &lt;div id=&quot;dc-login-overlay&quot;&gt;
+    &lt;div id=&quot;dc-login-card&quot;&gt;
+      &lt;div class=&quot;ll-eyebrow&quot;&gt;SK BROADBAND · DC ENGINEERING&lt;/div&gt;
+      &lt;h2&gt;면접 일정 취합&lt;/h2&gt;
+      &lt;p class=&quot;sub&quot;&gt;담당자 전용 화면입니다. 등록된 직원 계정으로 로그인해주세요.&lt;/p&gt;
+      &lt;label&gt;이메일&lt;/label&gt;
+      &lt;input type=&quot;email&quot; id=&quot;dc-login-email&quot; placeholder=&quot;staff@sk.com&quot; autocomplete=&quot;username&quot;&gt;
+      &lt;label&gt;비밀번호&lt;/label&gt;
+      &lt;input type=&quot;password&quot; id=&quot;dc-login-pw&quot; placeholder=&quot;••••••••&quot; autocomplete=&quot;current-password&quot;&gt;
+      &lt;div id=&quot;dc-login-err&quot;&gt;&lt;/div&gt;
+      &lt;button id=&quot;dc-login-btn&quot;&gt;로그인&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;wrap wide&quot; id=&quot;app-overlap&quot; style=&quot;display:none;&quot;&gt;
+    &lt;div class=&quot;header&quot;&gt;
+      &lt;div&gt;
+        &lt;div class=&quot;eyebrow&quot;&gt;SK BROADBAND · DC ENGINEERING&lt;/div&gt;
+        &lt;h1&gt;면접 일정 취합 — 6/29(월)~7/3(금)&lt;/h1&gt;
+        &lt;p&gt;면접관별로 제출한 가능시간을 한눈에 모아 봅니다. 숫자가 클수록 더 많은 면접관이 가능한 시간입니다.&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;button class=&quot;refresh-btn&quot; onclick=&quot;loadInterviewerSlots()&quot;&gt;⟳ 새로고침&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;hr-toolbar&quot;&gt;
+      &lt;div class=&quot;view-toggle&quot; id=&quot;view-toggle&quot;&gt;
+        &lt;div class=&quot;vtbtn active&quot; data-view=&quot;overlap&quot; onclick=&quot;setHrView(&#x27;overlap&#x27;)&quot;&gt;겹침 보기&lt;/div&gt;
+        &lt;div class=&quot;vtbtn&quot; data-view=&quot;byperson&quot; onclick=&quot;setHrView(&#x27;byperson&#x27;)&quot;&gt;면접관별 보기&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;legend&quot; id=&quot;legend&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div id=&quot;empty-state&quot; class=&quot;empty-state&quot; style=&quot;display:none;&quot;&gt;
+      아직 제출된 면접관 일정이 없습니다.&lt;br&gt;면접관이 가능시간 입력 탭에서 제출하면 여기에 표시됩니다.
+    &lt;/div&gt;
+
+    &lt;div id=&quot;byperson-chips&quot; class=&quot;interviewer-chips&quot; style=&quot;display:none;&quot;&gt;&lt;/div&gt;
+
+    &lt;div id=&quot;grid-container&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;script&gt;
+/* ============ SUBTAB SWITCHING ============ */
+function setSubtab(name){
+  document.querySelectorAll(&#x27;.subtab&#x27;).forEach(el=&gt; el.classList.toggle(&#x27;active&#x27;, el.dataset.sub===name));
+  document.getElementById(&#x27;subview-input&#x27;).classList.toggle(&#x27;active&#x27;, name===&#x27;input&#x27;);
+  document.getElementById(&#x27;subview-overlap&#x27;).classList.toggle(&#x27;active&#x27;, name===&#x27;overlap&#x27;);
+  if(name === &#x27;overlap&#x27;){
+    checkOverlapAuth();
+  }
+}
+
+/* ============ SHARED SLOT DEFINITIONS ============ */
+const DAYS = [
+  {date:&#x27;6/29&#x27;, label:&#x27;6월 29일&#x27;, dow:&#x27;(월)&#x27;},
+  {date:&#x27;6/30&#x27;, label:&#x27;6월 30일&#x27;, dow:&#x27;(화)&#x27;},
+  {date:&#x27;7/1&#x27;, label:&#x27;7월 1일&#x27;, dow:&#x27;(수)&#x27;},
+  {date:&#x27;7/2&#x27;, label:&#x27;7월 2일&#x27;, dow:&#x27;(목)&#x27;},
+  {date:&#x27;7/3&#x27;, label:&#x27;7월 3일&#x27;, dow:&#x27;(금)&#x27;},
+];
+const HOURS = [9,10,11,12,13,14,15,16,17];
+function slotId(date, hour){ return `${date}_${hour}`; }
+function timeLabel(hour){ return `${String(hour).padStart(2,&#x27;0&#x27;)}:00`; }
+function escapeHtml(s){
+  return (s||&#x27;&#x27;).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, m=&gt;({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[m]));
+}
+
+/* ============ INPUT FORM LOGIC ============ */
+const selected = new Set();
+
+function renderGrid(){
+  const grid = document.getElementById(&#x27;slot-grid&#x27;);
+  let html = &#x27;&#x27;;
+  html += `&lt;div class=&quot;gcell ghead&quot;&gt;&lt;/div&gt;`;
+  DAYS.forEach(d=&gt;{
+    html += `&lt;div class=&quot;gcell ghead&quot;&gt;&lt;span&gt;${d.label}&lt;/span&gt;&lt;span class=&quot;dow&quot;&gt;${d.dow}&lt;/span&gt;&lt;/div&gt;`;
+  });
+  HOURS.forEach(h=&gt;{
+    html += `&lt;div class=&quot;gcell gtime&quot;&gt;${timeLabel(h)}&lt;/div&gt;`;
+    DAYS.forEach(d=&gt;{
+      const id = slotId(d.date, h);
+      html += `&lt;div class=&quot;gcell gslot&quot; data-id=&quot;${id}&quot; onclick=&quot;toggleSlot(&#x27;${id}&#x27;)&quot;&gt;&lt;/div&gt;`;
+    });
+  });
+  grid.innerHTML = html;
+}
+renderGrid();
+
+function toggleSlot(id){
+  if(selected.has(id)) selected.delete(id);
+  else selected.add(id);
+  refreshGridUI();
+}
+function refreshGridUI(){
+  document.querySelectorAll(&#x27;#slot-grid .gslot&#x27;).forEach(el=&gt;{
+    el.classList.toggle(&#x27;selected&#x27;, selected.has(el.dataset.id));
+  });
+  document.getElementById(&#x27;selected-count&#x27;).textContent = `선택됨: ${selected.size}개`;
+}
+
+document.getElementById(&#x27;select-all-btn&#x27;).addEventListener(&#x27;click&#x27;, ()=&gt;{
+  DAYS.forEach(d=&gt; HOURS.forEach(h=&gt; selected.add(slotId(d.date,h))));
+  refreshGridUI();
+});
+document.getElementById(&#x27;clear-all-btn&#x27;).addEventListener(&#x27;click&#x27;, ()=&gt;{
+  selected.clear();
+  refreshGridUI();
+});
+
+async function submitSlots(){
+  const name = document.getElementById(&#x27;interviewer-name&#x27;).value.trim();
+  const err = document.getElementById(&#x27;form-err&#x27;);
+  if(!name || selected.size === 0){
+    err.style.display = &#x27;block&#x27;;
+    return;
+  }
+  err.style.display = &#x27;none&#x27;;
+
+  const btn = document.getElementById(&#x27;submit-btn&#x27;);
+  btn.disabled = true;
+  btn.textContent = &#x27;제출 중…&#x27;;
+
+  const slotsArray = [...selected];
+
+  try{
+    const { error } = await window.__sb.from(&#x27;interviewer_slots&#x27;).upsert({
+      interviewer_name: name,
+      available_slots: slotsArray,
+      updated_at: new Date().toISOString()
+    }, { onConflict: &#x27;interviewer_name&#x27; });
+
+    if(error){ throw error; }
+
+    document.getElementById(&#x27;screen-form&#x27;).style.display = &#x27;none&#x27;;
+    document.getElementById(&#x27;screen-done&#x27;).style.display = &#x27;block&#x27;;
+  }catch(e){
+    console.error(&#x27;제출 실패:&#x27;, e);
+    btn.disabled = false;
+    btn.textContent = &#x27;제출하기&#x27;;
+    err.style.display = &#x27;block&#x27;;
+    err.textContent = &#x27;제출 중 오류가 발생했습니다. 다시 시도해주세요.&#x27;;
+  }
+}
+
+/* ============ OVERLAP (HR) LOGIC ============ */
+let interviewers = [];
+let currentHrView = &#x27;overlap&#x27;;
+let activeInterviewer = null;
+let overlapAuthChecked = false;
+
+function checkOverlapAuth(){
+  const overlay = document.getElementById(&#x27;dc-login-overlay&#x27;);
+  const appEl = document.getElementById(&#x27;app-overlap&#x27;);
+  window.__sb.auth.getSession().then(function(res){
+    if(res &amp;&amp; res.data &amp;&amp; res.data.session){
+      overlay.classList.remove(&#x27;visible&#x27;);
+      appEl.style.display = &#x27;block&#x27;;
+      if(!overlapAuthChecked){
+        overlapAuthChecked = true;
+        loadInterviewerSlots();
+      }
+    } else {
+      overlay.classList.add(&#x27;visible&#x27;);
+      appEl.style.display = &#x27;none&#x27;;
+    }
+  });
+}
+
+(function setupLogin(){
+  const sb = window.__sb;
+  const overlay = document.getElementById(&#x27;dc-login-overlay&#x27;);
+  const appEl = document.getElementById(&#x27;app-overlap&#x27;);
+  const btn = document.getElementById(&#x27;dc-login-btn&#x27;);
+  const errEl = document.getElementById(&#x27;dc-login-err&#x27;);
+
+  async function attempt(){
+    const email = document.getElementById(&#x27;dc-login-email&#x27;).value.trim();
+    const pw = document.getElementById(&#x27;dc-login-pw&#x27;).value;
+    if(!email || !pw){ errEl.style.display=&#x27;block&#x27;; errEl.textContent=&#x27;이메일과 비밀번호를 입력해주세요.&#x27;; return; }
+    btn.disabled = true; btn.textContent = &#x27;로그인 중…&#x27;; errEl.style.display=&#x27;none&#x27;;
+    const { error } = await sb.auth.signInWithPassword({ email: email, password: pw });
+    btn.disabled = false; btn.textContent = &#x27;로그인&#x27;;
+    if(error){ errEl.style.display=&#x27;block&#x27;; errEl.textContent=&#x27;로그인 실패: 이메일 또는 비밀번호를 확인해주세요.&#x27;; return; }
+    overlay.classList.remove(&#x27;visible&#x27;);
+    appEl.style.display = &#x27;block&#x27;;
+    overlapAuthChecked = true;
+    loadInterviewerSlots();
+  }
+
+  btn.addEventListener(&#x27;click&#x27;, attempt);
+  document.getElementById(&#x27;dc-login-pw&#x27;).addEventListener(&#x27;keydown&#x27;, function(e){ if(e.key===&#x27;Enter&#x27;) attempt(); });
+})();
+
+async function loadInterviewerSlots(){
+  try{
+    const { data, error } = await window.__sb.from(&#x27;interviewer_slots&#x27;).select(&#x27;*&#x27;).order(&#x27;interviewer_name&#x27;, { ascending: true });
+    if(error){ throw error; }
+    interviewers = data || [];
+    renderHr();
+  }catch(e){
+    console.error(&#x27;면접관 일정 로드 실패:&#x27;, e);
+    interviewers = [];
+    renderHr();
+  }
+}
+
+function setHrView(v){
+  currentHrView = v;
+  document.querySelectorAll(&#x27;.vtbtn&#x27;).forEach(el=&gt;{
+    el.classList.toggle(&#x27;active&#x27;, el.dataset.view === v);
+  });
+  document.getElementById(&#x27;byperson-chips&#x27;).style.display = (v === &#x27;byperson&#x27;) ? &#x27;flex&#x27; : &#x27;none&#x27;;
+  renderHr();
+}
+
+function buildOverlapCounts(){
+  const counts = {};
+  DAYS.forEach(d=&gt; HOURS.forEach(h=&gt;{
+    counts[slotId(d.date,h)] = { count: 0, names: [] };
+  }));
+  interviewers.forEach(iv=&gt;{
+    (iv.available_slots||[]).forEach(sid=&gt;{
+      if(counts[sid]){
+        counts[sid].count += 1;
+        counts[sid].names.push(iv.interviewer_name);
+      }
+    });
+  });
+  return counts;
+}
+
+function colorForCount(count, max){
+  if(count === 0) return &#x27;transparent&#x27;;
+  const ratio = max &gt; 0 ? count / max : 0;
+  const alpha = 0.12 + ratio * 0.78;
+  return `rgba(15,27,46,${alpha.toFixed(2)})`;
+}
+
+function renderLegend(maxCount){
+  const legend = document.getElementById(&#x27;legend&#x27;);
+  if(currentHrView !== &#x27;overlap&#x27;){ legend.innerHTML=&#x27;&#x27;; return; }
+  let html = &#x27;&lt;span&gt;가능 인원:&lt;/span&gt;&#x27;;
+  const steps = maxCount &lt;= 1 ? [0,1] : [0, Math.ceil(maxCount/2), maxCount];
+  [...new Set(steps)].forEach(s=&gt;{
+    html += `&lt;span class=&quot;legend-swatch&quot; style=&quot;background:${colorForCount(s, maxCount)};&quot;&gt;&lt;/span&gt;&lt;span&gt;${s}명&lt;/span&gt;`;
+  });
+  legend.innerHTML = html;
+}
+
+function renderOverlapGrid(){
+  const counts = buildOverlapCounts();
+  const maxCount = Math.max(1, ...Object.values(counts).map(c=&gt;c.count));
+  renderLegend(maxCount);
+
+  let html = &#x27;&lt;div class=&quot;hr-grid-scroll&quot;&gt;&lt;div class=&quot;grid&quot;&gt;&#x27;;
+  html += `&lt;div class=&quot;gcell ghead&quot;&gt;&lt;/div&gt;`;
+  DAYS.forEach(d=&gt;{
+    html += `&lt;div class=&quot;gcell ghead&quot;&gt;&lt;span&gt;${d.label}&lt;/span&gt;&lt;span class=&quot;dow&quot;&gt;${d.dow}&lt;/span&gt;&lt;/div&gt;`;
+  });
+  HOURS.forEach(h=&gt;{
+    html += `&lt;div class=&quot;gcell gtime&quot;&gt;${timeLabel(h)}&lt;/div&gt;`;
+    DAYS.forEach(d=&gt;{
+      const id = slotId(d.date, h);
+      const info = counts[id];
+      const bg = colorForCount(info.count, maxCount);
+      const textColor = info.count / maxCount &gt; 0.5 ? &#x27;#F7F5F0&#x27; : &#x27;var(--ink)&#x27;;
+      html += `&lt;div class=&quot;gcell&quot; style=&quot;background:${bg};&quot; title=&quot;${escapeHtml(info.names.join(&#x27;, &#x27;))}&quot;&gt;
+        ${info.count &gt; 0 ? `&lt;span class=&quot;gcount&quot; style=&quot;color:${textColor};&quot;&gt;${info.count}&lt;/span&gt;&lt;span class=&quot;gnames&quot; style=&quot;color:${textColor};&quot;&gt;${escapeHtml(info.names.join(&#x27;, &#x27;))}&lt;/span&gt;` : &#x27;&#x27;}
+      &lt;/div&gt;`;
+    });
+  });
+  html += &#x27;&lt;/div&gt;&lt;/div&gt;&#x27;;
+  document.getElementById(&#x27;grid-container&#x27;).innerHTML = html;
+}
+
+function renderByPersonChips(){
+  const chipsEl = document.getElementById(&#x27;byperson-chips&#x27;);
+  if(!activeInterviewer &amp;&amp; interviewers.length){
+    activeInterviewer = interviewers[0].interviewer_name;
+  }
+  chipsEl.innerHTML = interviewers.map(iv=&gt;`
+    &lt;div class=&quot;iv-chip ${iv.interviewer_name===activeInterviewer?&#x27;active&#x27;:&#x27;&#x27;}&quot; onclick=&quot;selectInterviewer(&#x27;${escapeHtml(iv.interviewer_name)}&#x27;)&quot;&gt;
+      ${escapeHtml(iv.interviewer_name)}&lt;span class=&quot;cnt&quot;&gt;${(iv.available_slots||[]).length}개&lt;/span&gt;
+    &lt;/div&gt;
+  `).join(&#x27;&#x27;);
+}
+
+function selectInterviewer(name){
+  activeInterviewer = name;
+  renderHr();
+}
+
+function renderByPersonGrid(){
+  const iv = interviewers.find(x=&gt;x.interviewer_name===activeInterviewer);
+  const selectedSet = new Set(iv ? (iv.available_slots||[]) : []);
+
+  let html = &#x27;&lt;div class=&quot;hr-grid-scroll&quot;&gt;&lt;div class=&quot;grid&quot;&gt;&#x27;;
+  html += `&lt;div class=&quot;gcell ghead&quot;&gt;&lt;/div&gt;`;
+  DAYS.forEach(d=&gt;{
+    html += `&lt;div class=&quot;gcell ghead&quot;&gt;&lt;span&gt;${d.label}&lt;/span&gt;&lt;span class=&quot;dow&quot;&gt;${d.dow}&lt;/span&gt;&lt;/div&gt;`;
+  });
+  HOURS.forEach(h=&gt;{
+    html += `&lt;div class=&quot;gcell gtime&quot;&gt;${timeLabel(h)}&lt;/div&gt;`;
+    DAYS.forEach(d=&gt;{
+      const id = slotId(d.date, h);
+      const isSel = selectedSet.has(id);
+      html += `&lt;div class=&quot;gcell&quot; style=&quot;background:${isSel ? &#x27;var(--navy)&#x27; : &#x27;transparent&#x27;};&quot;&gt;
+        ${isSel ? &#x27;&lt;span style=&quot;color:var(--gold);font-size:15px;&quot;&gt;✓&lt;/span&gt;&#x27; : &#x27;&#x27;}
+      &lt;/div&gt;`;
+    });
+  });
+  html += &#x27;&lt;/div&gt;&lt;/div&gt;&#x27;;
+  document.getElementById(&#x27;grid-container&#x27;).innerHTML = html;
+}
+
+function renderHr(){
+  const emptyState = document.getElementById(&#x27;empty-state&#x27;);
+  if(interviewers.length === 0){
+    emptyState.style.display = &#x27;block&#x27;;
+    document.getElementById(&#x27;grid-container&#x27;).innerHTML = &#x27;&#x27;;
+    document.getElementById(&#x27;byperson-chips&#x27;).innerHTML = &#x27;&#x27;;
+    document.getElementById(&#x27;legend&#x27;).innerHTML = &#x27;&#x27;;
+    return;
+  }
+  emptyState.style.display = &#x27;none&#x27;;
+
+  if(currentHrView === &#x27;overlap&#x27;){
+    renderOverlapGrid();
+  } else {
+    renderByPersonChips();
+    renderByPersonGrid();
+  }
+}
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+" onload="hideLoading('load-schedule')"></iframe>
     </div>
   </div>
 
