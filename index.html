@@ -103,6 +103,7 @@
 
     <div class="tabs" id="tabs-desktop">
       <div class="tab active" data-target="applicant"><span class="ticon">📝</span>지원자 사전인터뷰</div>
+      <div class="tab" data-target="schedule"><span class="ticon">🗓️</span>일정취합</div>
       <div class="tab" data-target="interviewer"><span class="ticon">🗂️</span>면접관 참고화면</div>
       <div class="tab" data-target="hr"><span class="ticon">📊</span>HR 대시보드</div>
     </div>
@@ -2545,10 +2546,16 @@ loadCandidates();
 &lt;/html&gt;
 " onload="hideLoading('load-hr')"></iframe>
     </div>
+
+    <div class="pane" id="pane-schedule">
+      <div class="loading" id="load-schedule">불러오는 중…</div>
+      <iframe srcdoc="__SCHEDULE_IFRAME_PLACEHOLDER__" onload="hideLoading('load-schedule')"></iframe>
+    </div>
   </div>
 
   <div class="tabs-mobile" id="tabs-mobile">
     <div class="tabm active" data-target="applicant"><span class="ticon">📝</span>지원자</div>
+    <div class="tabm" data-target="schedule"><span class="ticon">🗓️</span>일정취합</div>
     <div class="tabm" data-target="interviewer"><span class="ticon">🗂️</span>면접관</div>
     <div class="tabm" data-target="hr"><span class="ticon">📊</span>HR</div>
   </div>
@@ -2577,32 +2584,52 @@ document.querySelectorAll('.tabm').forEach(t=>{
 
 
 <style>
-  /* 기본: 직원 탭 숨김 (지원자에게는 지원자 탭만 보임) */
+  /* 기본: 면접관/직원 전용 탭 숨김 (지원자에게는 지원자 탭만 보임) */
   body:not(.staff-mode) .tab[data-target="interviewer"],
   body:not(.staff-mode) .tab[data-target="hr"],
   body:not(.staff-mode) .tabm[data-target="interviewer"],
   body:not(.staff-mode) .tabm[data-target="hr"]{
     display:none !important;
   }
+  /* 일정취합 탭: #interview 또는 #staff로 접근했을 때만 표시 (지원자에게는 숨김) */
+  body:not(.interview-mode):not(.staff-mode) .tab[data-target="schedule"],
+  body:not(.interview-mode):not(.staff-mode) .tabm[data-target="schedule"]{
+    display:none !important;
+  }
 </style>
 <script>
 (function(){
-  var STAFF_HASH = "#staff";   // 직원용 링크 표시 (예: .../index.html#staff)
-  function isStaff(){ return (location.hash || "").toLowerCase() === STAFF_HASH; }
+  var STAFF_HASH = "#staff";       // 직원용 링크 (면접관/HR 화면 + 일정취합 모두 표시)
+  var INTERVIEW_HASH = "#interview"; // 면접관용 링크 (일정취합 탭만 추가 표시)
+  function currentHash(){ return (location.hash || "").toLowerCase(); }
+  function isStaff(){ return currentHash() === STAFF_HASH; }
+  function isInterview(){ return currentHash() === INTERVIEW_HASH; }
 
   function applyMode(){
     if(isStaff()){
       document.body.classList.add("staff-mode");
+      document.body.classList.remove("interview-mode");
+    }else if(isInterview()){
+      document.body.classList.remove("staff-mode");
+      document.body.classList.add("interview-mode");
+      // 면접관 링크로는 면접관/HR 전용 화면에 들어가 있으면 지원자 탭으로 되돌림
+      var activePane = document.querySelector(".pane.active");
+      var activeId = activePane ? activePane.id : "";
+      if(activeId === "pane-interviewer" || activeId === "pane-hr"){
+        if(typeof switchTab === "function"){ try{ switchTab("applicant"); }catch(e){} }
+      }
     }else{
       document.body.classList.remove("staff-mode");
-      // 혹시 직원 탭이 활성화된 상태라면 지원자 탭으로 되돌림
-      var ap = document.getElementById("pane-applicant");
-      if(ap && !ap.classList.contains("active")){
+      document.body.classList.remove("interview-mode");
+      // 일반 지원자 링크: 면접관 전용(면접관/HR/일정취합) 화면에 있다면 지원자 탭으로 되돌림
+      var activePane2 = document.querySelector(".pane.active");
+      var activeId2 = activePane2 ? activePane2.id : "";
+      if(activeId2 === "pane-interviewer" || activeId2 === "pane-hr" || activeId2 === "pane-schedule"){
         if(typeof switchTab === "function"){ try{ switchTab("applicant"); }catch(e){} }
       }
     }
   }
-  // 해시 변경(직원이 #staff 추가/제거) 즉시 반영
+  // 해시 변경(#staff/#interview 추가·제거) 즉시 반영
   window.addEventListener("hashchange", applyMode);
   document.addEventListener("DOMContentLoaded", applyMode);
   applyMode();
