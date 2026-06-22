@@ -1,0 +1,2332 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DC전기직무 채용 시스템 — SK Broadband</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+  :root{
+    --navy:#0F1B2E; --cream:#F7F5F0; --slate:#3D5A73; --gold:#C9A961;
+    --ink:#1A2A3D; --line:#D8D2C4; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased;
+    display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+
+  /* ===== Top nav ===== */
+  .topnav{
+    background:var(--navy); color:var(--cream);
+    padding:0 20px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:space-between;
+    height:64px;
+  }
+  .brand-block{display:flex;align-items:center;gap:12px;}
+  .brand-mark{
+    width:32px;height:32px;border-radius:7px;background:var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--navy);font-size:13px;
+  }
+  .brand-text{display:flex;flex-direction:column;}
+  .brand-text .bt-main{font-size:14px;font-weight:700;line-height:1.2;}
+  .brand-text .bt-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:.08em;}
+
+  .tabs{display:flex;gap:4px;}
+  .tab{
+    padding:10px 18px; border-radius:8px; cursor:pointer;
+    font-size:13.5px; font-weight:600; color:#B9C3CF;
+    display:flex; align-items:center; gap:7px;
+    transition:background .15s, color .15s;
+  }
+  .tab:hover{background:rgba(255,255,255,0.06);}
+  .tab.active{background:var(--gold); color:var(--navy);}
+  .tab .ticon{font-size:15px;}
+
+  .nav-right{display:flex;align-items:center;gap:10px;}
+  .env-badge{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; color:#B9C3CF;
+    border:1px solid rgba(255,255,255,0.2); border-radius:5px; padding:4px 9px;
+  }
+
+  /* mobile tab bar (bottom) */
+  .tabs-mobile{display:none;}
+
+  /* ===== Content area ===== */
+  .content{flex:1; position:relative; overflow:hidden;}
+  .pane{
+    position:absolute; inset:0; display:none;
+  }
+  .pane.active{display:block;}
+  .pane iframe{
+    width:100%; height:100%; border:none; display:block; background:var(--cream);
+  }
+
+  /* loading shimmer */
+  .pane .loading{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:var(--cream); font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--slate);
+    transition:opacity .25s;
+  }
+  .pane .loading.hidden{opacity:0; pointer-events:none;}
+
+  @media (max-width:760px){
+    .topnav{height:56px;padding:0 14px;}
+    .tabs{display:none;}
+    .brand-text .bt-main{font-size:13px;}
+    .nav-right .env-badge{display:none;}
+
+    .tabs-mobile{
+      display:flex; flex-shrink:0; background:var(--navy);
+      border-top:1px solid rgba(255,255,255,0.1);
+    }
+    .tabm{
+      flex:1; text-align:center; padding:10px 4px 12px;
+      color:#8A96A4; font-size:11px; font-weight:600; cursor:pointer;
+      display:flex; flex-direction:column; align-items:center; gap:3px;
+    }
+    .tabm .ticon{font-size:18px;}
+    .tabm.active{color:var(--gold);}
+  }
+</style>
+</head>
+<body>
+
+  <div class="topnav">
+    <div class="brand-block">
+      <div class="brand-mark">DC</div>
+      <div class="brand-text">
+        <div class="bt-main">전기직무 채용 시스템</div>
+        <div class="bt-sub">SK BROADBAND</div>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs-desktop">
+      <div class="tab active" data-target="applicant"><span class="ticon">📝</span>지원자 사전인터뷰</div>
+      <div class="tab" data-target="interviewer"><span class="ticon">🗂️</span>면접관 참고화면</div>
+      <div class="tab" data-target="hr"><span class="ticon">📊</span>HR 대시보드</div>
+    </div>
+
+    <div class="nav-right">
+      <span class="env-badge">PROTOTYPE</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="pane active" id="pane-applicant">
+      <div class="loading" id="load-applicant">불러오는 중…</div>
+      <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.__sb = window.supabase.createClient(&quot;https://uawgfckzghdotahrmogu.supabase.co&quot;, &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhd2dmY2t6Z2hkb3RhaHJtb2d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMDIxNDksImV4cCI6MjA5NzY3ODE0OX0.pEiP_r90DzcZHzvJ79awAqCbnZ39bov5H6rznQfgPUM&quot;);
+&lt;/script&gt;
+
+&lt;script&gt;
+(function(){
+  const PREFIX = &quot;dc_prescreen:&quot;;
+  const _sb = window.__sb;       // shared supabase client (set after login/init)
+  let _cache = {};               // key -&gt; last fetched row (for list+get pairing)
+
+  function stripPrefix(key){ return (key||&#x27;&#x27;).indexOf(PREFIX)===0 ? key.slice(PREFIX.length) : key; }
+  function recordToValue(row){
+    // reconstruct the JSON string the existing code expects
+    const rec = Object.assign({}, row.data || {});
+    rec.status = row.status || rec.status || &#x27;사전질문 제출완료&#x27;;
+    if(row.exec_interview_slot) rec.execInterviewSlot = row.exec_interview_slot;
+    rec._key = PREFIX + row.email;
+    return JSON.stringify(rec);
+  }
+
+  window.storage = {
+    
+      // Applicant page never reads back (RLS would block anon select anyway).
+      get: async function(){ return null; },
+      list: async function(prefix){ return { keys: [], prefix: prefix, shared: true }; },
+    
+    set: async function(key, value){
+      const email = stripPrefix(key);
+      let rec;
+      try { rec = JSON.parse(value); } catch(e){ rec = {}; }
+      const status = rec.status || &#x27;사전질문 제출완료&#x27;;
+      const execSlot = rec.execInterviewSlot || &#x27;&#x27;;
+      // strip columns we store separately so they don&#x27;t duplicate inside data
+      const dataCopy = Object.assign({}, rec);
+      delete dataCopy._key;
+      const payload = {
+        email: email,
+        data: dataCopy,
+        status: status,
+        exec_interview_slot: execSlot,
+        updated_at: new Date().toISOString()
+      };
+      // upsert on email (insert or overwrite same applicant)
+      const { error } = await _sb.from(&#x27;candidates&#x27;).upsert(payload, { onConflict: &#x27;email&#x27; });
+      if(error){ console.error(&#x27;Supabase set 실패:&#x27;, error); throw error; }
+      return { key: key, value: value, shared: true };
+    },
+    delete: async function(key){
+      const email = stripPrefix(key);
+      const { error } = await _sb.from(&#x27;candidates&#x27;).delete().eq(&#x27;email&#x27;, email);
+      return { key: key, deleted: !error, shared: true };
+    }
+  };
+})();
+&lt;/script&gt;
+
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;DC전기직무 사전 인터뷰 — SK Broadband&lt;/title&gt;
+&lt;style&gt;
+  @import url(&#x27;https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap&#x27;);
+
+  :root{
+    --navy:#0F1B2E;
+    --cream:#F7F5F0;
+    --slate:#3D5A73;
+    --gold:#C9A961;
+    --ink:#1A2A3D;
+    --line:#D8D2C4;
+    --ok:#2F6F4E;
+    --warn:#A6432C;
+    --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:&#x27;Noto Sans KR&#x27;, sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:&#x27;JetBrains Mono&#x27;, monospace;}
+
+  /* ===== Shell ===== */
+  .app{
+    max-width:640px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--cream);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ===== Header / circuit progress ===== */
+  .topbar{
+    background:var(--navy);
+    color:var(--cream);
+    padding:20px 24px 16px;
+    position:sticky;
+    top:0;
+    z-index:30;
+  }
+  .topbar-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:14px;
+  }
+  .brand{
+    font-size:11px;
+    letter-spacing:0.12em;
+    color:var(--gold);
+    font-family:&#x27;JetBrains Mono&#x27;, monospace;
+  }
+  .stage-label{
+    font-size:13px;
+    color:#B9C3CF;
+    font-family:&#x27;JetBrains Mono&#x27;, monospace;
+  }
+  /* circuit breaker style progress */
+  .circuit{
+    display:flex;
+    align-items:center;
+    gap:0;
+    width:100%;
+  }
+  .node{
+    width:9px;height:9px;border-radius:50%;
+    background:#2C4054;
+    border:1.5px solid #2C4054;
+    flex-shrink:0;
+    transition:all .35s ease;
+    position:relative;
+  }
+  .node.done{
+    background:var(--gold);
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(201,169,97,0.18);
+  }
+  .node.current{
+    background:var(--navy);
+    border-color:var(--gold);
+    width:13px;height:13px;
+  }
+  .wire{
+    flex:1;
+    height:2px;
+    background:#2C4054;
+    margin:0 2px;
+    position:relative;
+    overflow:hidden;
+  }
+  .wire .fill{
+    position:absolute;left:0;top:0;bottom:0;
+    width:0%;
+    background:var(--gold);
+    transition:width .4s ease;
+  }
+
+  /* ===== Body ===== */
+  .body{
+    flex:1;
+    padding:28px 24px 140px;
+  }
+
+  .section-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:&#x27;JetBrains Mono&#x27;, monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    color:var(--slate);
+    background:rgba(61,90,115,0.08);
+    padding:5px 10px;
+    border-radius:3px;
+    margin-bottom:16px;
+  }
+  .section-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);}
+
+  .qnum{
+    font-family:&#x27;JetBrains Mono&#x27;, monospace;
+    font-size:12px;
+    color:var(--gold);
+    font-weight:700;
+    margin-bottom:8px;
+    display:block;
+  }
+  .qtitle{
+    font-size:19px;
+    font-weight:700;
+    line-height:1.45;
+    color:var(--navy);
+    margin:0 0 6px;
+  }
+  .qhint{
+    font-size:13px;
+    color:var(--slate);
+    line-height:1.5;
+    margin:0 0 22px;
+  }
+  .qhint .var{
+    background:rgba(201,169,97,0.18);
+    padding:1px 6px;
+    border-radius:3px;
+    font-weight:600;
+    color:var(--navy);
+  }
+
+  /* card screen */
+  .screen{
+    display:none;
+    animation:rise .35s ease;
+  }
+  .screen.active{display:block;}
+  @keyframes rise{
+    from{opacity:0;transform:translateY(10px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+
+  /* choice options */
+  .choices{display:flex;flex-direction:column;gap:10px;}
+  .choice{
+    border:1.5px solid var(--line);
+    background:var(--card);
+    border-radius:10px;
+    padding:15px 16px;
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .choice:hover{border-color:var(--slate);}
+  .choice.selected{
+    border-color:var(--navy);
+    background:#EFEAE0;
+  }
+  .choice .letter{
+    font-family:&#x27;JetBrains Mono&#x27;, monospace;
+    font-weight:700;
+    font-size:12px;
+    color:var(--cream);
+    background:var(--slate);
+    width:22px;height:22px;
+    border-radius:5px;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    margin-top:1px;
+  }
+  .choice.selected .letter{background:var(--navy);}
+  .choice .ctext{font-size:14.5px;line-height:1.5;color:var(--ink);}
+  .choice.selected .ctext{font-weight:600;}
+  .choice.multi .check{
+    width:18px;height:18px;border-radius:4px;border:1.5px solid var(--line);
+    flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;
+  }
+  .choice.multi.selected .check{background:var(--navy);border-color:var(--navy);}
+  .choice.multi .check svg{display:none;width:11px;height:11px;}
+  .choice.multi.selected .check svg{display:block;}
+
+  /* rank list */
+  .ranklist{display:flex;flex-direction:column;gap:10px;}
+  .rankitem{
+    border:1.5px solid var(--line);
+    background:var(--card);
+    border-radius:10px;
+    padding:13px 14px;
+    display:flex;align-items:center;gap:12px;
+    cursor:grab;
+    user-select:none;
+  }
+  .rankitem.dragging{opacity:0.4;}
+  .rankitem .ranknum{
+    font-family:&#x27;JetBrains Mono&#x27;, monospace;
+    font-weight:700;font-size:13px;color:var(--gold);
+    width:20px;text-align:center;
+  }
+  .rankitem .gripicon{color:var(--line);font-size:14px;letter-spacing:2px;}
+  .rankhelp{font-size:12px;color:var(--slate);margin-bottom:12px;font-family:&#x27;JetBrains Mono&#x27;,monospace;}
+
+  /* text input */
+  textarea, input[type=text]{
+    width:100%;
+    border:1.5px solid var(--line);
+    background:var(--card);
+    border-radius:10px;
+    padding:14px;
+    font-family:&#x27;Noto Sans KR&#x27;, sans-serif;
+    font-size:15px;
+    color:var(--ink);
+    resize:none;
+    line-height:1.5;
+  }
+  textarea:focus, input[type=text]:focus{
+    outline:none;
+    border-color:var(--navy);
+  }
+  .counter{
+    text-align:right;
+    font-family:&#x27;JetBrains Mono&#x27;, monospace;
+    font-size:11.5px;
+    color:var(--slate);
+    margin-top:6px;
+  }
+  .counter.over{color:var(--warn);font-weight:700;}
+
+  /* footer nav */
+  .footer{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    max-width:640px;
+    margin:0 auto;
+    background:var(--cream);
+    border-top:1px solid var(--line);
+    padding:14px 24px 20px;
+    display:flex;
+    gap:10px;
+    z-index:20;
+  }
+  .btn{
+    flex:1;
+    border:none;
+    border-radius:10px;
+    padding:15px;
+    font-family:&#x27;Noto Sans KR&#x27;, sans-serif;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    transition:opacity .15s, transform .1s;
+  }
+  .btn:active{transform:scale(0.985);}
+  .btn-prev{
+    flex:0 0 88px;
+    background:transparent;
+    border:1.5px solid var(--line);
+    color:var(--slate);
+  }
+  .btn-next{
+    background:var(--navy);
+    color:var(--cream);
+  }
+  .btn-next:disabled{opacity:0.35;cursor:not-allowed;}
+  .btn-next .arrow{font-family:&#x27;JetBrains Mono&#x27;,monospace;margin-left:6px;}
+
+  /* ===== Intro screen ===== */
+  .intro{padding:40px 24px 24px;}
+  .intro-eyebrow{
+    font-family:&#x27;JetBrains Mono&#x27;, monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    color:var(--gold);
+    margin-bottom:14px;
+  }
+  .intro h1{
+    font-size:26px;
+    line-height:1.35;
+    color:var(--navy);
+    margin:0 0 14px;
+  }
+  .intro p{font-size:14.5px;line-height:1.65;color:var(--slate);margin:0 0 22px;}
+  .meta-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--line);
+    border-radius:10px;
+    overflow:hidden;
+    margin-bottom:24px;
+  }
+  .meta-cell{background:var(--card);padding:14px 16px;}
+  .meta-cell .mlabel{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:10.5px;color:var(--slate);letter-spacing:.06em;margin-bottom:4px;}
+  .meta-cell .mval{font-size:15px;font-weight:700;color:var(--navy);}
+  .notice{
+    background:rgba(61,90,115,0.07);
+    border-left:3px solid var(--slate);
+    padding:13px 14px;
+    border-radius:6px;
+    font-size:13px;
+    line-height:1.6;
+    color:var(--ink);
+    margin-bottom:28px;
+  }
+  .start-btn{
+    width:100%;background:var(--navy);color:var(--cream);
+    border:none;border-radius:10px;padding:17px;
+    font-size:16px;font-weight:700;cursor:pointer;
+  }
+
+  /* ===== Schedule screen ===== */
+  .slot{
+    border:1.5px solid var(--line);
+    background:var(--card);
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:10px;
+    cursor:pointer;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .slot.selected{border-color:var(--navy);background:#EFEAE0;}
+  .slot .sdate{font-size:15px;font-weight:700;color:var(--navy);}
+  .slot .stime{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:13px;color:var(--slate);margin-top:3px;}
+  .slot .savail{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:10.5px;color:var(--ok);background:rgba(47,111,78,0.1);padding:3px 8px;border-radius:4px;}
+  .slot .savail.few{color:var(--warn);background:rgba(166,67,44,0.1);}
+
+  /* ===== Done screen ===== */
+  .done-wrap{padding:60px 24px;text-align:center;}
+  .done-icon{
+    width:56px;height:56px;border-radius:50%;
+    background:var(--navy);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 24px;
+  }
+  .done-icon svg{width:26px;height:26px;}
+  .done-wrap h2{font-size:21px;color:var(--navy);margin:0 0 10px;}
+  .done-wrap p{font-size:14px;color:var(--slate);line-height:1.7;margin:0 0 28px;}
+  .summary-card{
+    background:var(--card);
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:18px;
+    text-align:left;
+    margin-bottom:24px;
+  }
+  .summary-row{
+    display:flex;justify-content:space-between;
+    padding:9px 0;
+    border-bottom:1px solid var(--line);
+    font-size:13.5px;
+  }
+  .summary-row:last-child{border-bottom:none;}
+  .summary-row .slabel{color:var(--slate);}
+  .summary-row .sval{font-weight:700;color:var(--navy);font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:13px;}
+
+  @media (max-width:420px){
+    .body{padding:24px 18px 140px;}
+    .footer{padding:14px 18px 18px;}
+    .intro{padding:32px 18px 18px;}
+  }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div class=&quot;app&quot; id=&quot;app&quot;&gt;
+
+  &lt;!-- ============ INTRO ============ --&gt;
+  &lt;div class=&quot;screen active&quot; id=&quot;screen-intro&quot;&gt;
+    &lt;div class=&quot;intro&quot;&gt;
+      &lt;div class=&quot;intro-eyebrow&quot;&gt;SK BROADBAND · DC ENGINEERING&lt;/div&gt;
+      &lt;h1&gt;전기직무 사전 인터뷰&lt;/h1&gt;
+      &lt;p&gt;1차 면접 전, 직무 전문성과 일하는 방식을 미리 확인하는 절차입니다.&lt;br&gt;모든 지원자에게 동일한 질문이 주어지며, 답변은 1차 면접에서 더 깊은 대화를 나누는 자료로 활용됩니다.&lt;/p&gt;
+
+      &lt;div class=&quot;meta-grid&quot;&gt;
+        &lt;div class=&quot;meta-cell&quot;&gt;
+          &lt;div class=&quot;mlabel&quot;&gt;예상 소요시간&lt;/div&gt;
+          &lt;div class=&quot;mval&quot; id=&quot;intro-time&quot;&gt;약 10분&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;meta-cell&quot;&gt;
+          &lt;div class=&quot;mlabel&quot;&gt;문항 수&lt;/div&gt;
+          &lt;div class=&quot;mval&quot;&gt;10문항&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;meta-cell&quot;&gt;
+          &lt;div class=&quot;mlabel&quot;&gt;직무 전문성&lt;/div&gt;
+          &lt;div class=&quot;mval&quot;&gt;6문항&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;meta-cell&quot;&gt;
+          &lt;div class=&quot;mlabel&quot;&gt;일하는 방식&lt;/div&gt;
+          &lt;div class=&quot;mval&quot;&gt;4문항&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;notice&quot;&gt;
+        ⓘ 정답을 찾는 질문이 아닙니다. 본인이 실제로 경험한 내용을 구체적으로 적어주실수록, 1차 면접에서 더 깊이 있는 대화가 가능합니다.
+      &lt;/div&gt;
+
+      &lt;div style=&quot;margin-bottom:20px;&quot;&gt;
+        &lt;label style=&quot;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11.5px;color:var(--slate);display:block;margin-bottom:6px;&quot;&gt;성명&lt;/label&gt;
+        &lt;input type=&quot;text&quot; id=&quot;applicant-name&quot; placeholder=&quot;홍길동&quot; style=&quot;margin-bottom:12px;&quot;&gt;
+        &lt;label style=&quot;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11.5px;color:var(--slate);display:block;margin-bottom:6px;&quot;&gt;연락처 이메일&lt;/label&gt;
+        &lt;input type=&quot;text&quot; id=&quot;applicant-email&quot; placeholder=&quot;example@email.com&quot;&gt;
+        &lt;p style=&quot;font-size:12px;color:var(--warn);margin:7px 0 0;line-height:1.5;&quot;&gt;※ 반드시 SK careers 사이트를 통해 제출한 이메일 주소를 입력해주세요.&lt;/p&gt;
+      &lt;/div&gt;
+
+      &lt;button class=&quot;start-btn&quot; onclick=&quot;startFlow()&quot;&gt;응답 시작하기 →&lt;/button&gt;
+      &lt;div id=&quot;intro-error&quot; style=&quot;display:none;color:var(--warn);font-size:12.5px;margin-top:10px;text-align:center;&quot;&gt;성명과 이메일을 입력해주세요.&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- ============ TOPBAR (shown from Q1 onward) ============ --&gt;
+  &lt;div class=&quot;topbar&quot; id=&quot;topbar&quot; style=&quot;display:none;&quot;&gt;
+    &lt;div class=&quot;topbar-row&quot;&gt;
+      &lt;div class=&quot;brand&quot;&gt;DC·E PRE-SCREEN&lt;/div&gt;
+      &lt;div class=&quot;stage-label&quot; id=&quot;stage-label&quot;&gt;SECTION 1 / 직무전문성&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;circuit&quot; id=&quot;circuit&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;body&quot; id=&quot;body-content&quot;&gt;
+
+    &lt;!-- Q1 --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;1&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 01&lt;/span&gt;
+      &lt;span class=&quot;qnum&quot;&gt;Q1&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot;&gt;가장 최근 수행한 프로젝트명을 적어주세요.&lt;/h2&gt;
+      &lt;p class=&quot;qhint&quot;&gt;지원서에 기재하신 프로젝트 중 하나를 적어주시면 됩니다. (예: 카타르 LNG Project)&lt;/p&gt;
+      &lt;input type=&quot;text&quot; id=&quot;q1-proj-input&quot; maxlength=&quot;40&quot; placeholder=&quot;프로젝트명 입력&quot;&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Q2 --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;2&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 02&lt;/span&gt;
+      &lt;span class=&quot;qnum&quot;&gt;Q2&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot;&gt;그 프로젝트에서, 본인이 직접 의사결정한 부분과 상급자·타 부서가 결정한 부분을 구분해서 적어주세요.&lt;/h2&gt;
+      &lt;p class=&quot;qhint&quot;&gt;대상 프로젝트: &lt;span class=&quot;var&quot; id=&quot;q2-proj-echo&quot;&gt;—&lt;/span&gt;&lt;/p&gt;
+      &lt;textarea id=&quot;q1-input&quot; rows=&quot;4&quot; maxlength=&quot;120&quot; placeholder=&quot;예: 차단기 용량은 ETAP 해석 결과로 제가 직접 산정했고, 최종 Vendor 선정은 PM 협의로 결정되었습니다.&quot;&gt;&lt;/textarea&gt;
+      &lt;div class=&quot;counter&quot; id=&quot;q1-counter&quot;&gt;0 / 80자 권장&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Q3 --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;3&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 03&lt;/span&gt;
+      &lt;span class=&quot;qnum&quot;&gt;Q3&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot;&gt;같은 프로젝트에서, 가장 어려웠던 기술적 이슈 1개를 구체적 수치나 현상과 함께 적어주세요.&lt;/h2&gt;
+      &lt;p class=&quot;qhint&quot;&gt;대상 프로젝트: &lt;span class=&quot;var&quot; id=&quot;q3-proj-echo&quot;&gt;—&lt;/span&gt;&lt;/p&gt;
+      &lt;textarea id=&quot;q2-input&quot; rows=&quot;4&quot; maxlength=&quot;120&quot; placeholder=&quot;예: 22kV 2회선 무정전 인입 작업 중 절연저항이 기준치(1000MΩ) 이하로 측정되어 케이블 교체가 필요했던 상황&quot;&gt;&lt;/textarea&gt;
+      &lt;div class=&quot;counter&quot; id=&quot;q2-counter&quot;&gt;0 / 80자 권장&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Q4 --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;4&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 04&lt;/span&gt;
+      &lt;span class=&quot;qnum&quot;&gt;Q4&lt;/span&gt;
+      &lt;p class=&quot;qhint&quot;&gt;중복 선택 가능합니다. 실제로 수행해본 업무의 범위만 체크해주세요.&lt;/p&gt;
+      &lt;div class=&quot;choices&quot; id=&quot;q3-choices&quot;&gt;
+        &lt;div class=&quot;choice multi&quot; data-val=&quot;design&quot;&gt;&lt;span class=&quot;check&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;설계 (Design)&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice multi&quot; data-val=&quot;procurement&quot;&gt;&lt;span class=&quot;check&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;구매 / Vendor 기술검토&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice multi&quot; data-val=&quot;construction&quot;&gt;&lt;span class=&quot;check&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;시공관리 (Construction)&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice multi&quot; data-val=&quot;commissioning&quot;&gt;&lt;span class=&quot;check&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;시운전 (FAT / SAT / Cx)&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice multi&quot; data-val=&quot;operation&quot;&gt;&lt;span class=&quot;check&quot;&gt;&lt;svg viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;운영 (Commissioning 이후)&lt;/span&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Q4 --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;5&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 04&lt;/span&gt;
+      &lt;span class=&quot;qnum&quot;&gt;Q4&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot;&gt;운영 중인 DC에서 무중단이 필수인 전력설비 교체작업을 맡았다면, 가장 먼저 할 일은?&lt;/h2&gt;
+      &lt;p class=&quot;qhint&quot;&gt;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&lt;/p&gt;
+      &lt;div class=&quot;choices&quot; id=&quot;q4-choices&quot;&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;A&quot;&gt;&lt;span class=&quot;letter&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;영향범위 시뮬레이션 (부하·전원경로 분석)&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;B&quot;&gt;&lt;span class=&quot;letter&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;백업 경로 사전 확보&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;C&quot;&gt;&lt;span class=&quot;letter&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;관련 부서·고객 사전 공지&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;D&quot;&gt;&lt;span class=&quot;letter&quot;&gt;D&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;작업 매뉴얼(MOP) 재검토&lt;/span&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Q5 --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;6&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;JOB EXPERTISE · 05&lt;/span&gt;
+      &lt;span class=&quot;qnum&quot;&gt;Q5&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot;&gt;시공사·벤더와 의견이 충돌하는 상황에서, 본인의 우선순위는?&lt;/h2&gt;
+      &lt;p class=&quot;qhint&quot;&gt;가장 가깝다고 생각하는 항목 하나를 선택해주세요.&lt;/p&gt;
+      &lt;div class=&quot;choices&quot; id=&quot;q5-choices&quot;&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;A&quot;&gt;&lt;span class=&quot;letter&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;기술기준 우선&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;B&quot;&gt;&lt;span class=&quot;letter&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;일정준수 우선&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;C&quot;&gt;&lt;span class=&quot;letter&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;비용효율 우선&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;D&quot;&gt;&lt;span class=&quot;letter&quot;&gt;D&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;현장협의체 합의 우선&lt;/span&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Q6 --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;7&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;WORK STYLE · 06&lt;/span&gt;
+      &lt;span class=&quot;qnum&quot;&gt;Q6&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot;&gt;본인이 가장 일하기 편한 리더 스타일은?&lt;/h2&gt;
+      &lt;p class=&quot;qhint&quot;&gt;정답은 없습니다. 본인에게 더 가까운 쪽을 선택해주세요.&lt;/p&gt;
+      &lt;div class=&quot;choices&quot; id=&quot;q6-choices&quot;&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;A&quot;&gt;&lt;span class=&quot;letter&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;방향만 주고 방법은 전적으로 맡기는 리더&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;B&quot;&gt;&lt;span class=&quot;letter&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;주기적으로 체크인하며 방향을 같이 조정하는 리더&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;choice&quot; data-val=&quot;C&quot;&gt;&lt;span class=&quot;letter&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;세부 진행상황까지 함께 챙기는 리더&lt;/span&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Q7 --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;8&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;WORK STYLE · 07&lt;/span&gt;
+      &lt;span class=&quot;qnum&quot;&gt;Q7&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot;&gt;한 달에 2주 이상 타 지역 현장에 상주해야 하는 프로젝트가 주어진다면, 우선 고려사항 1가지는?&lt;/h2&gt;
+      &lt;p class=&quot;qhint&quot;&gt;짧게 적어주셔도 충분합니다.&lt;/p&gt;
+      &lt;textarea id=&quot;q7-input&quot; rows=&quot;3&quot; maxlength=&quot;80&quot; placeholder=&quot;예: 숙소와 현장 간 이동 거리, 주말 귀가 가능 여부&quot;&gt;&lt;/textarea&gt;
+      &lt;div class=&quot;counter&quot; id=&quot;q7-counter&quot;&gt;0 / 50자 권장&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Q8 --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;9&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;WORK STYLE · 08&lt;/span&gt;
+      &lt;span class=&quot;qnum&quot;&gt;Q8&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot;&gt;현장에서 일할 때, 본인에게 더 중요한 것의 순서를 매겨주세요.&lt;/h2&gt;
+      &lt;p class=&quot;rankhelp&quot;&gt;↕ 항목을 드래그해서 우선순위 순서로 정렬해주세요 (1순위가 위)&lt;/p&gt;
+      &lt;div class=&quot;ranklist&quot; id=&quot;ranklist&quot;&gt;
+        &lt;div class=&quot;rankitem&quot; draggable=&quot;true&quot; data-val=&quot;speed&quot;&gt;&lt;span class=&quot;ranknum&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;빠른 의사결정&lt;/span&gt;&lt;span class=&quot;gripicon&quot;&gt;⋮⋮&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;rankitem&quot; draggable=&quot;true&quot; data-val=&quot;review&quot;&gt;&lt;span class=&quot;ranknum&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;꼼꼼한 사전검토&lt;/span&gt;&lt;span class=&quot;gripicon&quot;&gt;⋮⋮&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;rankitem&quot; draggable=&quot;true&quot; data-val=&quot;relation&quot;&gt;&lt;span class=&quot;ranknum&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;현장 협의체와의 관계&lt;/span&gt;&lt;span class=&quot;gripicon&quot;&gt;⋮⋮&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;rankitem&quot; draggable=&quot;true&quot; data-val=&quot;report&quot;&gt;&lt;span class=&quot;ranknum&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;ctext&quot;&gt;본사 보고체계 준수&lt;/span&gt;&lt;span class=&quot;gripicon&quot;&gt;⋮⋮&lt;/span&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Q9 (이직 희망사유) --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;10&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;WORK STYLE · 09&lt;/span&gt;
+      &lt;span class=&quot;qnum&quot;&gt;Q9&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot;&gt;이직을 희망하시는 이유를 간단히 적어주세요.&lt;/h2&gt;
+      &lt;p class=&quot;qhint&quot;&gt;짧게 적어주셔도 충분합니다.&lt;/p&gt;
+      &lt;textarea id=&quot;q-turnover-input&quot; rows=&quot;3&quot; maxlength=&quot;80&quot; placeholder=&quot;예: 새로운 기술 영역에서의 성장 기회를 찾고 있습니다&quot;&gt;&lt;/textarea&gt;
+      &lt;div class=&quot;counter&quot; id=&quot;q-turnover-counter&quot;&gt;0 / 50자 이내&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- SCHEDULE --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;11&quot;&gt;
+      &lt;span class=&quot;section-tag&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;INTERVIEW SCHEDULE&lt;/span&gt;
+      &lt;h2 class=&quot;qtitle&quot; style=&quot;margin-bottom:4px;&quot;&gt;1차 면접 가능 일정을 선택해주세요&lt;/h2&gt;
+      &lt;p class=&quot;qhint&quot;&gt;가능한 시간을 모두 선택해주세요. 선택하신 시간 중 하나로 면접관과 일정이 조율됩니다.&lt;/p&gt;
+      &lt;div class=&quot;choice&quot; id=&quot;select-all-slot&quot; style=&quot;margin-bottom:14px;border-color:var(--gold);&quot;&gt;
+        &lt;span class=&quot;letter&quot; style=&quot;background:var(--gold);color:var(--navy);&quot;&gt;✓&lt;/span&gt;
+        &lt;span class=&quot;ctext&quot; style=&quot;font-weight:700;&quot;&gt;모든 시간 가능&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;div id=&quot;slot-list&quot;&gt;&lt;/div&gt;
+
+      &lt;div class=&quot;choice&quot; id=&quot;cannot-attend-slot&quot; style=&quot;margin-top:14px;border-color:var(--warn);&quot;&gt;
+        &lt;span class=&quot;letter&quot; style=&quot;background:var(--warn);&quot;&gt;✕&lt;/span&gt;
+        &lt;span class=&quot;ctext&quot; style=&quot;font-weight:700;&quot;&gt;제시된 시간에 참여가 어렵습니다 (별도 조율 요청)&lt;/span&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- CONFIRM --&gt;
+    &lt;div class=&quot;screen&quot; data-step=&quot;12&quot;&gt;
+      &lt;div class=&quot;done-wrap&quot; style=&quot;padding:20px 0 0;&quot;&gt;
+        &lt;div class=&quot;done-icon&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot;&gt;&lt;path d=&quot;M5 13l4 4L19 7&quot; stroke=&quot;#C9A961&quot; stroke-width=&quot;2.4&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;&lt;/div&gt;
+        &lt;h2&gt;제출이 완료되었습니다&lt;/h2&gt;
+        &lt;p&gt;응답 내용은 1차 면접관에게 사전 전달되며,&lt;br&gt;면접 시 답변을 바탕으로 더 구체적인 대화를 나누게 됩니다.&lt;/p&gt;
+
+        &lt;div class=&quot;summary-card&quot;&gt;
+          &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;1차 면접 일시&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;확정 후 개별 안내 예정 (약 1시간 소요)&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;진행 방식&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;비대면 / Zoom (개별 안내 예정)&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;면접 구성&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;1(지원자) : 多(면접관)&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;제출 시각&lt;/span&gt;&lt;span class=&quot;sval&quot; id=&quot;confirm-time&quot;&gt;—&lt;/span&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;notice&quot; style=&quot;text-align:left;&quot;&gt;
+          ⓘ 면접 일정 변경이 필요하면 채용담당자에게 회신 메일로 알려주세요.&lt;br&gt;
+          채용담당자 : &lt;a href=&quot;mailto:sujin.park0@sk.com&quot; style=&quot;color:var(--navy);font-weight:600;&quot;&gt;sujin.park0@sk.com&lt;/a&gt;, &lt;a href=&quot;mailto:sh.leee@sk.com&quot; style=&quot;color:var(--navy);font-weight:600;&quot;&gt;sh.leee@sk.com&lt;/a&gt;, &lt;a href=&quot;mailto:eunseo@sk.com&quot; style=&quot;color:var(--navy);font-weight:600;&quot;&gt;eunseo@sk.com&lt;/a&gt;
+        &lt;/div&gt;
+
+        &lt;div id=&quot;mailto-block&quot; style=&quot;margin-top:8px;&quot;&gt;
+          &lt;p style=&quot;font-size:12.5px;color:var(--slate);margin-bottom:10px;text-align:left;&quot;&gt;
+            아래 버튼 중 본인이 사용하는 메일 서비스를 눌러주세요. 메일 작성창이 열리면 &lt;b&gt;보내기&lt;/b&gt;를 눌러야 채용담당자에게 실제로 전달됩니다.
+          &lt;/p&gt;
+          &lt;div style=&quot;display:flex;gap:8px;&quot;&gt;
+            &lt;a id=&quot;mailto-link&quot; href=&quot;#&quot; class=&quot;start-btn&quot; style=&quot;flex:1;display:block;text-decoration:none;text-align:center;box-sizing:border-box;background:var(--card);color:var(--navy);border:1.5px solid var(--line);padding:14px;&quot;&gt;기본 메일앱으로 보내기&lt;/a&gt;
+            &lt;a id=&quot;gmail-link&quot; href=&quot;#&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; class=&quot;start-btn&quot; style=&quot;flex:1;display:block;text-decoration:none;text-align:center;box-sizing:border-box;background:var(--navy);color:var(--cream);padding:14px;&quot;&gt;Gmail로 보내기&lt;/a&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+  &lt;/div&gt;
+
+  &lt;!-- ============ FOOTER NAV ============ --&gt;
+  &lt;div class=&quot;footer&quot; id=&quot;footer&quot; style=&quot;display:none;&quot;&gt;
+    &lt;button class=&quot;btn btn-prev&quot; onclick=&quot;prevStep()&quot;&gt;이전&lt;/button&gt;
+    &lt;button class=&quot;btn btn-next&quot; id=&quot;next-btn&quot; onclick=&quot;nextStep()&quot;&gt;다음&lt;span class=&quot;arrow&quot;&gt;→&lt;/span&gt;&lt;/button&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;script&gt;
+/* ============ CONFIG ============ */
+const HR_EMAILS = [&quot;sujin.park0@sk.com&quot;, &quot;sh.leee@sk.com&quot;, &quot;eunseo@sk.com&quot;, &quot;0heatherpark0@gmail.com&quot;]; // 발송 대상 (gmail 포함, 화면 비표시)
+const STORAGE_PREFIX = &quot;dc_prescreen&quot;; // 면접관/HR 대시보드와 공유하는 storage key prefix
+
+/* ============ STATE ============ */
+let step = 0; // 0 = intro
+const TOTAL_STEPS = 12; // 1~10 questions, 11 schedule, 12 confirm
+const answers = {};
+
+function startFlow(){
+  const name = document.getElementById(&#x27;applicant-name&#x27;).value.trim();
+  const email = document.getElementById(&#x27;applicant-email&#x27;).value.trim();
+  const err = document.getElementById(&#x27;intro-error&#x27;);
+  if(!name || !email){
+    err.style.display = &#x27;block&#x27;;
+    return;
+  }
+  err.style.display = &#x27;none&#x27;;
+  answers.applicantName = name;
+  answers.applicantEmail = email;
+  goTo(1);
+}
+
+const SLOTS = [
+  {id:&#x27;s1&#x27;, date:&#x27;2026년 6월 24일 (수)&#x27;, time:&#x27;오전 10:00 – 11:00&#x27;, avail:&#x27;여유&#x27;},
+  {id:&#x27;s2&#x27;, date:&#x27;2026년 6월 24일 (수)&#x27;, time:&#x27;오후 2:00 – 3:00&#x27;, avail:&#x27;마감임박&#x27;},
+  {id:&#x27;s3&#x27;, date:&#x27;2026년 6월 25일 (목)&#x27;, time:&#x27;오전 11:00 – 12:00&#x27;, avail:&#x27;여유&#x27;},
+  {id:&#x27;s4&#x27;, date:&#x27;2026년 6월 26일 (금)&#x27;, time:&#x27;오후 3:00 – 4:00&#x27;, avail:&#x27;여유&#x27;},
+];
+
+function renderSlots(){
+  const wrap = document.getElementById(&#x27;slot-list&#x27;);
+  wrap.innerHTML = SLOTS.map(s =&gt; `
+    &lt;div class=&quot;slot&quot; data-id=&quot;${s.id}&quot; onclick=&quot;toggleSlot(&#x27;${s.id}&#x27;)&quot;&gt;
+      &lt;div style=&quot;display:flex;align-items:center;gap:12px;&quot;&gt;
+        &lt;span class=&quot;check&quot; style=&quot;width:18px;height:18px;border-radius:4px;border:1.5px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;&quot;&gt;
+          &lt;svg class=&quot;slot-checkmark&quot; viewBox=&quot;0 0 16 16&quot; fill=&quot;none&quot; style=&quot;display:none;width:11px;height:11px;&quot;&gt;&lt;path d=&quot;M3 8l3.5 3.5L13 4.5&quot; stroke=&quot;white&quot; stroke-width=&quot;2.2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;/&gt;&lt;/svg&gt;
+        &lt;/span&gt;
+        &lt;div&gt;
+          &lt;div class=&quot;sdate&quot;&gt;${s.date}&lt;/div&gt;
+          &lt;div class=&quot;stime mono&quot;&gt;${s.time}&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;span class=&quot;savail ${s.avail===&#x27;마감임박&#x27;?&#x27;few&#x27;:&#x27;&#x27;}&quot;&gt;${s.avail}&lt;/span&gt;
+    &lt;/div&gt;
+  `).join(&#x27;&#x27;);
+}
+renderSlots();
+
+function refreshSlotUI(){
+  const cannotAttend = !!answers.cannotAttend;
+  document.querySelectorAll(&#x27;.slot&#x27;).forEach(el=&gt;{
+    const isSelected = !cannotAttend &amp;&amp; (answers.slots||[]).includes(el.dataset.id);
+    el.classList.toggle(&#x27;selected&#x27;, isSelected);
+    el.style.opacity = cannotAttend ? &#x27;0.4&#x27; : &#x27;1&#x27;;
+    el.style.pointerEvents = cannotAttend ? &#x27;none&#x27; : &#x27;auto&#x27;;
+    const check = el.querySelector(&#x27;.check&#x27;);
+    const mark = el.querySelector(&#x27;.slot-checkmark&#x27;);
+    if(isSelected){
+      check.style.background = &#x27;var(--navy)&#x27;;
+      check.style.borderColor = &#x27;var(--navy)&#x27;;
+      mark.style.display = &#x27;block&#x27;;
+    }else{
+      check.style.background = &#x27;transparent&#x27;;
+      check.style.borderColor = &#x27;var(--line)&#x27;;
+      mark.style.display = &#x27;none&#x27;;
+    }
+  });
+  const allSelected = !cannotAttend &amp;&amp; (answers.slots||[]).length === SLOTS.length;
+  const selectAllEl = document.getElementById(&#x27;select-all-slot&#x27;);
+  selectAllEl.classList.toggle(&#x27;selected&#x27;, allSelected);
+  selectAllEl.style.opacity = cannotAttend ? &#x27;0.4&#x27; : &#x27;1&#x27;;
+  selectAllEl.style.pointerEvents = cannotAttend ? &#x27;none&#x27; : &#x27;auto&#x27;;
+  document.getElementById(&#x27;cannot-attend-slot&#x27;).classList.toggle(&#x27;selected&#x27;, cannotAttend);
+}
+
+function toggleSlot(id){
+  if(!answers.slots) answers.slots = [];
+  const idx = answers.slots.indexOf(id);
+  if(idx&gt;-1) answers.slots.splice(idx,1);
+  else answers.slots.push(id);
+  refreshSlotUI();
+  updateNextEnabled();
+}
+
+function toggleAllSlots(){
+  if(!answers.slots) answers.slots = [];
+  const allSelected = answers.slots.length === SLOTS.length;
+  answers.slots = allSelected ? [] : SLOTS.map(s=&gt;s.id);
+  refreshSlotUI();
+  updateNextEnabled();
+}
+document.getElementById(&#x27;select-all-slot&#x27;).addEventListener(&#x27;click&#x27;, toggleAllSlots);
+
+function toggleCannotAttend(){
+  answers.cannotAttend = !answers.cannotAttend;
+  if(answers.cannotAttend){
+    answers.slots = []; // 참여불가 선택 시 기존 슬롯 선택 초기화
+  }
+  refreshSlotUI();
+  updateNextEnabled();
+}
+document.getElementById(&#x27;cannot-attend-slot&#x27;).addEventListener(&#x27;click&#x27;, toggleCannotAttend);
+
+/* ============ CIRCUIT PROGRESS (steps 1-8 only) ============ */
+function renderCircuit(){
+  const c = document.getElementById(&#x27;circuit&#x27;);
+  let html = &#x27;&#x27;;
+  for(let i=1;i&lt;=10;i++){
+    const cls = i &lt; step ? &#x27;done&#x27; : (i === step ? &#x27;current&#x27; : &#x27;&#x27;);
+    html += `&lt;div class=&quot;node ${cls}&quot;&gt;&lt;/div&gt;`;
+    if(i&lt;10){
+      const fillPct = i &lt; step ? 100 : 0;
+      html += `&lt;div class=&quot;wire&quot;&gt;&lt;div class=&quot;fill&quot; style=&quot;width:${fillPct}%&quot;&gt;&lt;/div&gt;&lt;/div&gt;`;
+    }
+  }
+  c.innerHTML = html;
+}
+
+function updateStageLabel(){
+  const label = document.getElementById(&#x27;stage-label&#x27;);
+  if(step&gt;=1 &amp;&amp; step&lt;=6) label.textContent = `SECTION 1 / 직무전문성 · ${step}/6`;
+  else if(step&gt;=7 &amp;&amp; step&lt;=10) label.textContent = `SECTION 2 / 일하는 방식 · ${step-6}/4`;
+  else if(step===11) label.textContent = `면접 일정 선택`;
+  else if(step===12) label.textContent = `제출 완료`;
+}
+
+/* ============ NAV ============ */
+function goTo(n){
+  step = n;
+  document.querySelectorAll(&#x27;.screen&#x27;).forEach(s=&gt;s.classList.remove(&#x27;active&#x27;));
+
+  if(n===0){
+    document.getElementById(&#x27;screen-intro&#x27;).classList.add(&#x27;active&#x27;);
+    document.getElementById(&#x27;topbar&#x27;).style.display=&#x27;none&#x27;;
+    document.getElementById(&#x27;footer&#x27;).style.display=&#x27;none&#x27;;
+    return;
+  }
+
+  const target = document.querySelector(`.screen[data-step=&quot;${n}&quot;]`);
+  if(target) target.classList.add(&#x27;active&#x27;);
+
+  document.getElementById(&#x27;topbar&#x27;).style.display = (n&lt;=11) ? &#x27;block&#x27; : &#x27;none&#x27;;
+  document.getElementById(&#x27;footer&#x27;).style.display = &#x27;flex&#x27;;
+
+  if(n&lt;=10){ renderCircuit(); }
+  updateStageLabel();
+
+  const prevBtn = document.querySelector(&#x27;.btn-prev&#x27;);
+  prevBtn.style.visibility = (n===1) ? &#x27;hidden&#x27; : &#x27;visible&#x27;;
+
+  const nextBtn = document.getElementById(&#x27;next-btn&#x27;);
+  if(n===11){ nextBtn.innerHTML = &#x27;일정 확정&lt;span class=&quot;arrow&quot;&gt;→&lt;/span&gt;&#x27;; }
+  else if(n===12){ document.getElementById(&#x27;footer&#x27;).style.display=&#x27;none&#x27;; }
+  else { nextBtn.innerHTML = &#x27;다음&lt;span class=&quot;arrow&quot;&gt;→&lt;/span&gt;&#x27;; }
+
+  updateNextEnabled();
+  window.scrollTo(0,0);
+}
+
+/* ============ LABEL MAPS (for mailto / storage readability) ============ */
+const LABELS = {
+  q3: {design:&#x27;설계&#x27;, procurement:&#x27;구매/Vendor 검토&#x27;, construction:&#x27;시공관리&#x27;, commissioning:&#x27;시운전(FAT/SAT/Cx)&#x27;, operation:&#x27;운영&#x27;},
+  q4: {A:&#x27;영향범위 시뮬레이션&#x27;, B:&#x27;백업 경로 사전 확보&#x27;, C:&#x27;관련 부서·고객 사전 공지&#x27;, D:&#x27;작업 매뉴얼(MOP) 재검토&#x27;},
+  q5: {A:&#x27;기술기준 우선&#x27;, B:&#x27;일정준수 우선&#x27;, C:&#x27;비용효율 우선&#x27;, D:&#x27;현장협의체 합의 우선&#x27;},
+  q6: {A:&#x27;방향만 주고 방법은 맡기는 리더&#x27;, B:&#x27;주기적으로 체크인하는 리더&#x27;, C:&#x27;세부진행까지 챙기는 리더&#x27;},
+  q8rank: {speed:&#x27;빠른 의사결정&#x27;, review:&#x27;꼼꼼한 사전검토&#x27;, relation:&#x27;현장 협의체와의 관계&#x27;, report:&#x27;본사 보고체계 준수&#x27;}
+};
+
+function buildSubmissionRecord(){
+  const selectedSlots = (answers.slots||[]).map(id =&gt; SLOTS.find(x=&gt;x.id===id)).filter(Boolean);
+  const slotStrings = selectedSlots.map(s =&gt; `${s.date} ${s.time}`);
+  const cannotAttend = !!answers.cannotAttend;
+  return {
+    candidateName: answers.applicantName || &#x27;&#x27;,
+    candidateEmail: answers.applicantEmail || &#x27;&#x27;,
+    submittedAt: new Date().toISOString(),
+    project: answers[&#x27;q1-proj-input&#x27;] || &#x27;&#x27;,
+    decisionBoundary: answers[&#x27;q1-input&#x27;] || &#x27;&#x27;,
+    techIssue: answers[&#x27;q2-input&#x27;] || &#x27;&#x27;,
+    phasesInvolved: (answers.q3||[]).map(v=&gt;LABELS.q3[v]||v),
+    scenarioMaintenance: LABELS.q4[answers.q4] || &#x27;&#x27;,
+    scenarioVendorConflict: LABELS.q5[answers.q5] || &#x27;&#x27;,
+    leadershipPref: LABELS.q6[answers.q6] || &#x27;&#x27;,
+    relocationConsideration: answers[&#x27;q7-input&#x27;] || &#x27;&#x27;,
+    turnoverReason: answers[&#x27;q-turnover-input&#x27;] || &#x27;&#x27;,
+    priorityRank: (answers.q8||[]).map(v=&gt;LABELS.q8rank[v]||v),
+    cannotAttend: cannotAttend,
+    interviewSlots: slotStrings,
+    interviewSlot: cannotAttend ? &#x27;제시된 시간 참여 불가 (별도 조율 필요)&#x27; : slotStrings.join(&#x27; / &#x27;), // 면접관/HR 화면 호환용 (문자열 합본)
+    status: &#x27;사전질문 제출완료&#x27;
+  };
+}
+
+async function saveSubmissionToStorage(record){
+  try{
+    const key = `${STORAGE_PREFIX}:${record.candidateEmail || record.candidateName}`;
+    await window.storage.set(key, JSON.stringify(record), true); // shared=true: 면접관/HR과 공유
+  }catch(e){
+    console.error(&#x27;storage 저장 실패 (면접관/HR 화면과 별도로, 메일은 정상 발송됩니다):&#x27;, e);
+  }
+}
+
+function buildEmailSubjectAndBody(record){
+  const subject = `[DC전기직무 사전인터뷰 제출] ${record.candidateName}`;
+  const bodyLines = [
+    `지원자: ${record.candidateName} (${record.candidateEmail})`,
+    `제출시각: ${new Date(record.submittedAt).toLocaleString(&#x27;ko-KR&#x27;)}`,
+    ``,
+    `[1차 면접 희망 일정] ${record.interviewSlot}`,
+    ``,
+    `--- 직무전문성 ---`,
+    `Q1. 프로젝트명: ${record.project}`,
+    `Q2. 의사결정 경계: ${record.decisionBoundary}`,
+    `Q3. 기술적 이슈: ${record.techIssue}`,
+    `Q4. 참여 단계: ${record.phasesInvolved.join(&#x27;, &#x27;)}`,
+    `Q5. 무중단작업 시나리오: ${record.scenarioMaintenance}`,
+    `Q6. 벤더 의견충돌 우선순위: ${record.scenarioVendorConflict}`,
+    ``,
+    `--- 일하는 방식 ---`,
+    `Q7. 선호 리더십 스타일: ${record.leadershipPref}`,
+    `Q8. 지역근무 우선고려사항: ${record.relocationConsideration}`,
+    `Q9. 현장 우선순위: ${record.priorityRank.join(&#x27; &gt; &#x27;)}`,
+    `Q10. 이직 희망사유: ${record.turnoverReason}`,
+  ];
+  return { subject, body: bodyLines.join(&#x27;\n&#x27;) };
+}
+
+function buildMailtoLink(record){
+  const {subject, body} = buildEmailSubjectAndBody(record);
+  const to = HR_EMAILS.join(&#x27;,&#x27;);
+  return `mailto:${to}?subject=${encodeURIComponent(subject)}&amp;body=${encodeURIComponent(body)}`;
+}
+
+function buildGmailLink(record){
+  const {subject, body} = buildEmailSubjectAndBody(record);
+  const to = HR_EMAILS.join(&#x27;,&#x27;);
+  return `https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=${encodeURIComponent(to)}&amp;su=${encodeURIComponent(subject)}&amp;body=${encodeURIComponent(body)}`;
+}
+
+function nextStep(){
+  if(step===12) return;
+  if(step===11){
+    // finalize
+    const record = buildSubmissionRecord();
+    document.getElementById(&#x27;confirm-time&#x27;).textContent = new Date().toLocaleString(&#x27;ko-KR&#x27;);
+
+    saveSubmissionToStorage(record); // 면접관/HR 대시보드용 (실패해도 메일 발송엔 영향 없음)
+    document.getElementById(&#x27;mailto-link&#x27;).setAttribute(&#x27;href&#x27;, buildMailtoLink(record));
+    document.getElementById(&#x27;gmail-link&#x27;).setAttribute(&#x27;href&#x27;, buildGmailLink(record));
+
+    goTo(12);
+    return;
+  }
+  goTo(step+1);
+}
+function prevStep(){
+  if(step&lt;=1) return;
+  goTo(step-1);
+}
+
+/* ============ INPUT WIRING ============ */
+// Q1, Q2, Q7 textareas
+function wireTextarea(id, counterId, max, recommended){
+  const el = document.getElementById(id);
+  const counter = document.getElementById(counterId);
+  el.addEventListener(&#x27;input&#x27;, ()=&gt;{
+    const len = el.value.length;
+    counter.textContent = `${len} / ${recommended}자 권장`;
+    counter.classList.toggle(&#x27;over&#x27;, len &gt; recommended);
+    answers[id] = el.value;
+    updateNextEnabled();
+  });
+}
+wireTextarea(&#x27;q1-input&#x27;,&#x27;q1-counter&#x27;,120,80);
+wireTextarea(&#x27;q2-input&#x27;,&#x27;q2-counter&#x27;,120,80);
+wireTextarea(&#x27;q7-input&#x27;,&#x27;q7-counter&#x27;,80,50);
+wireTextarea(&#x27;q-turnover-input&#x27;,&#x27;q-turnover-counter&#x27;,80,50);
+
+// Q1 project name input -&gt; echoes into Q2/Q3 hints, and into final summary
+const projInput = document.getElementById(&#x27;q1-proj-input&#x27;);
+projInput.addEventListener(&#x27;input&#x27;, ()=&gt;{
+  const val = projInput.value.trim();
+  answers[&#x27;q1-proj-input&#x27;] = projInput.value;
+  const display = val.length ? val : &#x27;—&#x27;;
+  document.getElementById(&#x27;q2-proj-echo&#x27;).textContent = display;
+  document.getElementById(&#x27;q3-proj-echo&#x27;).textContent = display;
+  updateNextEnabled();
+});
+
+// Q3 multi-select
+document.getElementById(&#x27;q3-choices&#x27;).addEventListener(&#x27;click&#x27;, (e)=&gt;{
+  const item = e.target.closest(&#x27;.choice&#x27;);
+  if(!item) return;
+  item.classList.toggle(&#x27;selected&#x27;);
+  const selected = [...document.querySelectorAll(&#x27;#q3-choices .choice.selected&#x27;)].map(el=&gt;el.dataset.val);
+  answers.q3 = selected;
+  updateNextEnabled();
+});
+
+// Q4, Q5, Q6 single-select
+[&#x27;q4&#x27;,&#x27;q5&#x27;,&#x27;q6&#x27;].forEach(qid=&gt;{
+  document.getElementById(qid+&#x27;-choices&#x27;).addEventListener(&#x27;click&#x27;, (e)=&gt;{
+    const item = e.target.closest(&#x27;.choice&#x27;);
+    if(!item) return;
+    document.querySelectorAll(`#${qid}-choices .choice`).forEach(el=&gt;el.classList.remove(&#x27;selected&#x27;));
+    item.classList.add(&#x27;selected&#x27;);
+    answers[qid] = item.dataset.val;
+    updateNextEnabled();
+  });
+});
+
+// Q8 drag-to-rank
+const ranklist = document.getElementById(&#x27;ranklist&#x27;);
+let dragEl = null;
+ranklist.addEventListener(&#x27;dragstart&#x27;, (e)=&gt;{
+  dragEl = e.target.closest(&#x27;.rankitem&#x27;);
+  dragEl.classList.add(&#x27;dragging&#x27;);
+});
+ranklist.addEventListener(&#x27;dragend&#x27;, ()=&gt;{
+  if(dragEl) dragEl.classList.remove(&#x27;dragging&#x27;);
+  dragEl = null;
+  renumberRanks();
+});
+ranklist.addEventListener(&#x27;dragover&#x27;, (e)=&gt;{
+  e.preventDefault();
+  const after = [...ranklist.querySelectorAll(&#x27;.rankitem:not(.dragging)&#x27;)].find(el=&gt;{
+    const r = el.getBoundingClientRect();
+    return e.clientY &lt; r.top + r.height/2;
+  });
+  if(after) ranklist.insertBefore(dragEl, after);
+  else ranklist.appendChild(dragEl);
+});
+function renumberRanks(){
+  [...ranklist.querySelectorAll(&#x27;.rankitem&#x27;)].forEach((el,i)=&gt;{
+    el.querySelector(&#x27;.ranknum&#x27;).textContent = i+1;
+  });
+  answers.q8 = [...ranklist.querySelectorAll(&#x27;.rankitem&#x27;)].map(el=&gt;el.dataset.val);
+}
+renumberRanks();
+// touch support (simple)
+let touchY=0, touchItem=null;
+ranklist.addEventListener(&#x27;touchstart&#x27;, (e)=&gt;{
+  touchItem = e.target.closest(&#x27;.rankitem&#x27;);
+  if(touchItem) touchItem.classList.add(&#x27;dragging&#x27;);
+},{passive:true});
+ranklist.addEventListener(&#x27;touchmove&#x27;, (e)=&gt;{
+  if(!touchItem) return;
+  const touch = e.touches[0];
+  const after = [...ranklist.querySelectorAll(&#x27;.rankitem:not(.dragging)&#x27;)].find(el=&gt;{
+    const r = el.getBoundingClientRect();
+    return touch.clientY &lt; r.top + r.height/2;
+  });
+  if(after) ranklist.insertBefore(touchItem, after);
+  else ranklist.appendChild(touchItem);
+},{passive:true});
+ranklist.addEventListener(&#x27;touchend&#x27;, ()=&gt;{
+  if(touchItem) touchItem.classList.remove(&#x27;dragging&#x27;);
+  touchItem=null;
+  renumberRanks();
+});
+
+/* ============ VALIDATION ============ */
+function updateNextEnabled(){
+  const nextBtn = document.getElementById(&#x27;next-btn&#x27;);
+  let ok = true;
+  switch(step){
+    case 1: ok = (answers[&#x27;q1-proj-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
+    case 2: ok = (answers[&#x27;q1-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
+    case 3: ok = (answers[&#x27;q2-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
+    case 4: ok = (answers.q3||[]).length&gt;0; break;
+    case 5: ok = !!answers.q4; break;
+    case 6: ok = !!answers.q5; break;
+    case 7: ok = !!answers.q6; break;
+    case 8: ok = (answers[&#x27;q7-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
+    case 9: ok = true; break; // ranking always has a value
+    case 10: ok = (answers[&#x27;q-turnover-input&#x27;]||&#x27;&#x27;).trim().length&gt;0; break;
+    case 11: ok = (answers.slots||[]).length&gt;0 || !!answers.cannotAttend; break;
+    default: ok = true;
+  }
+  nextBtn.disabled = !ok;
+}
+
+/* init */
+goTo(0);
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+" onload="hideLoading('load-applicant')"></iframe>
+    </div>
+    <div class="pane" id="pane-interviewer">
+      <div class="loading" id="load-interviewer">불러오는 중…</div>
+      <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.__sb = window.supabase.createClient(&quot;https://uawgfckzghdotahrmogu.supabase.co&quot;, &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhd2dmY2t6Z2hkb3RhaHJtb2d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMDIxNDksImV4cCI6MjA5NzY3ODE0OX0.pEiP_r90DzcZHzvJ79awAqCbnZ39bov5H6rznQfgPUM&quot;);
+&lt;/script&gt;
+&lt;style&gt;
+  #dc-login-overlay{
+    position:fixed; inset:0; z-index:9999; background:#0F1B2E;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    font-family:&#x27;Noto Sans KR&#x27;,sans-serif;
+  }
+  #dc-login-card{
+    background:#F7F5F0; border-radius:14px; padding:30px 26px; width:100%; max-width:360px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  }
+  #dc-login-card .ll-eyebrow{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;letter-spacing:.1em;color:#C9A961;margin-bottom:8px;}
+  #dc-login-card h2{font-size:18px;color:#0F1B2E;margin:0 0 4px;}
+  #dc-login-card p.sub{font-size:12.5px;color:#3D5A73;margin:0 0 20px;line-height:1.5;}
+  #dc-login-card label{display:block;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;color:#3D5A73;margin-bottom:6px;}
+  #dc-login-card input{
+    width:100%;border:1.5px solid #D8D2C4;background:#fff;border-radius:9px;
+    padding:12px;font-size:14px;color:#1A2A3D;margin-bottom:14px;box-sizing:border-box;
+  }
+  #dc-login-card input:focus{outline:none;border-color:#0F1B2E;}
+  #dc-login-card button{
+    width:100%;background:#0F1B2E;color:#F7F5F0;border:none;border-radius:9px;
+    padding:14px;font-size:15px;font-weight:700;cursor:pointer;
+  }
+  #dc-login-card button:disabled{opacity:.5;cursor:not-allowed;}
+  #dc-login-err{display:none;color:#A6432C;font-size:12.5px;margin-top:4px;margin-bottom:8px;text-align:center;}
+  #dc-logout-bar{
+    display:none; position:fixed; top:0; right:0; z-index:40; padding:8px 12px;
+  }
+  #dc-logout-bar button{
+    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff;
+    font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:11px; border-radius:6px; padding:6px 10px; cursor:pointer;
+  }
+  body.dc-locked{overflow:hidden;}
+&lt;/style&gt;
+&lt;div id=&quot;dc-login-overlay&quot;&gt;
+  &lt;div id=&quot;dc-login-card&quot;&gt;
+    &lt;div class=&quot;ll-eyebrow&quot;&gt;SK BROADBAND · DC ENGINEERING&lt;/div&gt;
+    &lt;h2&gt;면접관 참고화면&lt;/h2&gt;
+    &lt;p class=&quot;sub&quot;&gt;담당자 전용 화면입니다. 등록된 직원 계정으로 로그인해주세요.&lt;/p&gt;
+    &lt;label&gt;이메일&lt;/label&gt;
+    &lt;input type=&quot;email&quot; id=&quot;dc-login-email&quot; placeholder=&quot;staff@sk.com&quot; autocomplete=&quot;username&quot;&gt;
+    &lt;label&gt;비밀번호&lt;/label&gt;
+    &lt;input type=&quot;password&quot; id=&quot;dc-login-pw&quot; placeholder=&quot;••••••••&quot; autocomplete=&quot;current-password&quot;&gt;
+    &lt;div id=&quot;dc-login-err&quot;&gt;&lt;/div&gt;
+    &lt;button id=&quot;dc-login-btn&quot;&gt;로그인&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&quot;dc-logout-bar&quot;&gt;&lt;button id=&quot;dc-logout-btn&quot;&gt;로그아웃&lt;/button&gt;&lt;/div&gt;
+&lt;script&gt;
+(function(){
+  const sb = window.__sb;
+  const overlay = document.getElementById(&#x27;dc-login-overlay&#x27;);
+  const bar = document.getElementById(&#x27;dc-logout-bar&#x27;);
+  const btn = document.getElementById(&#x27;dc-login-btn&#x27;);
+  const errEl = document.getElementById(&#x27;dc-login-err&#x27;);
+  document.body.classList.add(&#x27;dc-locked&#x27;);
+
+  function unlock(){
+    overlay.style.display=&#x27;none&#x27;;
+    bar.style.display=&#x27;block&#x27;;
+    document.body.classList.remove(&#x27;dc-locked&#x27;);
+    // existing page code calls loadCandidates() on load; call again now that we&#x27;re authed
+    if(typeof window.loadCandidates === &#x27;function&#x27;){ try{ window.loadCandidates(); }catch(e){} }
+  }
+
+  async function attempt(){
+    const email = document.getElementById(&#x27;dc-login-email&#x27;).value.trim();
+    const pw = document.getElementById(&#x27;dc-login-pw&#x27;).value;
+    if(!email || !pw){ errEl.style.display=&#x27;block&#x27;; errEl.textContent=&#x27;이메일과 비밀번호를 입력해주세요.&#x27;; return; }
+    btn.disabled = true; btn.textContent = &#x27;로그인 중…&#x27;; errEl.style.display=&#x27;none&#x27;;
+    const { error } = await sb.auth.signInWithPassword({ email: email, password: pw });
+    btn.disabled = false; btn.textContent = &#x27;로그인&#x27;;
+    if(error){ errEl.style.display=&#x27;block&#x27;; errEl.textContent=&#x27;로그인 실패: 이메일 또는 비밀번호를 확인해주세요.&#x27;; return; }
+    unlock();
+  }
+
+  btn.addEventListener(&#x27;click&#x27;, attempt);
+  document.getElementById(&#x27;dc-login-pw&#x27;).addEventListener(&#x27;keydown&#x27;, function(e){ if(e.key===&#x27;Enter&#x27;) attempt(); });
+  document.getElementById(&#x27;dc-logout-btn&#x27;).addEventListener(&#x27;click&#x27;, async function(){
+    await sb.auth.signOut();
+    location.reload();
+  });
+
+  // already logged in? (session persists per browser)
+  sb.auth.getSession().then(function(res){
+    if(res &amp;&amp; res.data &amp;&amp; res.data.session){ unlock(); }
+  });
+})();
+&lt;/script&gt;
+
+&lt;script&gt;
+(function(){
+  const PREFIX = &quot;dc_prescreen:&quot;;
+  const _sb = window.__sb;       // shared supabase client (set after login/init)
+  let _cache = {};               // key -&gt; last fetched row (for list+get pairing)
+
+  function stripPrefix(key){ return (key||&#x27;&#x27;).indexOf(PREFIX)===0 ? key.slice(PREFIX.length) : key; }
+  function recordToValue(row){
+    // reconstruct the JSON string the existing code expects
+    const rec = Object.assign({}, row.data || {});
+    rec.status = row.status || rec.status || &#x27;사전질문 제출완료&#x27;;
+    if(row.exec_interview_slot) rec.execInterviewSlot = row.exec_interview_slot;
+    rec._key = PREFIX + row.email;
+    return JSON.stringify(rec);
+  }
+
+  window.storage = {
+    
+      get: async function(key){
+        const email = stripPrefix(key);
+        const { data, error } = await _sb.from(&#x27;candidates&#x27;).select(&#x27;*&#x27;).eq(&#x27;email&#x27;, email).maybeSingle();
+        if(error || !data) return null;
+        return { key: key, value: recordToValue(data), shared: true };
+      },
+      list: async function(prefix){
+        const { data, error } = await _sb.from(&#x27;candidates&#x27;).select(&#x27;*&#x27;).order(&#x27;submitted_at&#x27;, { ascending:false });
+        if(error || !data) return { keys: [], prefix: prefix, shared: true };
+        _cache = {};
+        const keys = data.map(function(row){
+          const k = PREFIX + row.email;
+          _cache[k] = row;
+          return k;
+        });
+        return { keys: keys, prefix: prefix, shared: true };
+      },
+    
+    set: async function(key, value){
+      const email = stripPrefix(key);
+      let rec;
+      try { rec = JSON.parse(value); } catch(e){ rec = {}; }
+      const status = rec.status || &#x27;사전질문 제출완료&#x27;;
+      const execSlot = rec.execInterviewSlot || &#x27;&#x27;;
+      // strip columns we store separately so they don&#x27;t duplicate inside data
+      const dataCopy = Object.assign({}, rec);
+      delete dataCopy._key;
+      const payload = {
+        email: email,
+        data: dataCopy,
+        status: status,
+        exec_interview_slot: execSlot,
+        updated_at: new Date().toISOString()
+      };
+      // upsert on email (insert or overwrite same applicant)
+      const { error } = await _sb.from(&#x27;candidates&#x27;).upsert(payload, { onConflict: &#x27;email&#x27; });
+      if(error){ console.error(&#x27;Supabase set 실패:&#x27;, error); throw error; }
+      return { key: key, value: value, shared: true };
+    },
+    delete: async function(key){
+      const email = stripPrefix(key);
+      const { error } = await _sb.from(&#x27;candidates&#x27;).delete().eq(&#x27;email&#x27;, email);
+      return { key: key, deleted: !error, shared: true };
+    }
+  };
+})();
+&lt;/script&gt;
+
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;면접관 참고화면 — DC전기직무&lt;/title&gt;
+&lt;style&gt;
+  @import url(&#x27;https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap&#x27;);
+  :root{
+    --navy:#0F1B2E; --cream:#F7F5F0; --slate:#3D5A73; --gold:#C9A961;
+    --ink:#1A2A3D; --line:#D8D2C4; --ok:#2F6F4E; --warn:#A6432C; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:&#x27;Noto Sans KR&#x27;,sans-serif;background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .mono{font-family:&#x27;JetBrains Mono&#x27;,monospace;}
+  .wrap{max-width:900px;margin:0 auto;padding:24px 20px 60px;}
+
+  .header{
+    background:var(--navy); color:var(--cream);
+    border-radius:12px; padding:22px 24px; margin-bottom:20px;
+  }
+  .header .eyebrow{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;letter-spacing:.1em;color:var(--gold);margin-bottom:8px;}
+  .header h1{font-size:21px;margin:0;}
+  .header p{font-size:13px;color:#B9C3CF;margin:8px 0 0;line-height:1.6;}
+
+  .candidate-select{
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:20px;
+  }
+  .cand-chip{
+    flex-shrink:0; background:var(--card); border:1.5px solid var(--line); border-radius:8px;
+    padding:10px 14px; cursor:pointer; font-size:13.5px; font-weight:600; white-space:nowrap;
+  }
+  .cand-chip.active{background:var(--navy); color:var(--cream); border-color:var(--navy);}
+  .cand-chip .ctime{display:block;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:10.5px;font-weight:400;color:var(--slate);margin-top:2px;}
+  .cand-chip.active .ctime{color:#B9C3CF;}
+
+  .empty-state{
+    background:var(--card); border:1.5px dashed var(--line); border-radius:12px;
+    padding:50px 24px; text-align:center; color:var(--slate); font-size:14px; line-height:1.7;
+  }
+
+  .candidate-panel{display:none;}
+  .candidate-panel.active{display:block;animation:rise .3s ease;}
+  @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  .profile-bar{
+    background:var(--card); border:1.5px solid var(--line); border-radius:12px;
+    padding:18px 20px; margin-bottom:16px;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+  }
+  .profile-bar .pname{font-size:19px;font-weight:700;color:var(--navy);}
+  .profile-bar .pmeta{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:12px;color:var(--slate);margin-top:4px;}
+  .slot-badge{
+    background:rgba(201,169,97,0.15); border:1px solid var(--gold); border-radius:6px;
+    padding:8px 12px; font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:12.5px; color:var(--navy); font-weight:600;
+  }
+
+  .flag-bar{
+    display:flex; flex-direction:column; gap:8px; margin-bottom:20px;
+  }
+  .flag{
+    border-radius:8px; padding:12px 14px; font-size:13px; line-height:1.55;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .flag.warn{background:rgba(166,67,44,0.08); border-left:3px solid var(--warn); color:var(--ink);}
+  .flag.info{background:rgba(61,90,115,0.08); border-left:3px solid var(--slate); color:var(--ink);}
+  .flag .ficon{flex-shrink:0;font-size:14px;}
+
+  .section-title{
+    font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:11.5px; letter-spacing:.08em;
+    color:var(--slate); margin:24px 0 10px; display:flex; align-items:center; gap:8px;
+  }
+  .section-title .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);}
+
+  .qa-card{
+    background:var(--card); border:1.5px solid var(--line); border-radius:10px;
+    padding:16px 18px; margin-bottom:10px;
+  }
+  .qa-card .qlabel{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px;}
+  .qa-card .qq{font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:8px;line-height:1.5;}
+  .qa-card .qa{font-size:14.5px;color:var(--ink);line-height:1.6;}
+  .qa-card .qa.empty{color:var(--slate);font-style:italic;}
+  .qa-card.short .qa{position:relative;}
+  .tag-lowdetail{
+    display:inline-block; margin-top:8px; font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:10.5px;
+    background:rgba(166,67,44,0.1); color:var(--warn); padding:3px 8px; border-radius:4px;
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip-item{
+    background:rgba(61,90,115,0.08); color:var(--slate); font-size:12.5px; padding:5px 10px; border-radius:6px;
+  }
+  .rank-display{display:flex;flex-direction:column;gap:6px;}
+  .rank-row{display:flex;align-items:center;gap:10px;font-size:13.5px;}
+  .rank-row .rn{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-weight:700;color:var(--gold);width:18px;}
+
+  .followup-box{
+    background:var(--navy); border-radius:10px; padding:18px 20px; margin-top:24px; color:var(--cream);
+  }
+  .followup-box .ftitle{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11.5px;color:var(--gold);letter-spacing:.06em;margin-bottom:10px;}
+  .followup-box ul{margin:0;padding-left:18px;}
+  .followup-box li{font-size:13.5px;line-height:1.7;margin-bottom:6px;}
+
+  .refresh-btn{
+    background:var(--card); border:1.5px solid var(--line); border-radius:8px;
+    padding:9px 14px; font-size:12.5px; cursor:pointer; color:var(--slate); font-weight:600;
+  }
+  .topbar-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+
+  &lt;div class=&quot;header&quot;&gt;
+    &lt;div class=&quot;eyebrow&quot;&gt;SK BROADBAND · DC ENGINEERING&lt;/div&gt;
+    &lt;h1&gt;면접관 참고화면 — 사전응답 요약&lt;/h1&gt;
+    &lt;p&gt;지원자가 제출한 사전질문 응답입니다. 자동으로 표시되는 &quot;확인 필요&quot; 항목을 1차 면접에서 직접 물어봐 주세요. 점수·합격여부는 이 화면에서 판단하지 않습니다.&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;topbar-row&quot;&gt;
+    &lt;span class=&quot;mono&quot; style=&quot;font-size:12px;color:var(--slate);&quot;&gt;지원자 &lt;span id=&quot;cand-count&quot;&gt;0&lt;/span&gt;명 제출됨&lt;/span&gt;
+    &lt;button class=&quot;refresh-btn&quot; onclick=&quot;loadCandidates()&quot;&gt;⟳ 새로고침&lt;/button&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;candidate-select&quot; id=&quot;candidate-select&quot;&gt;&lt;/div&gt;
+
+  &lt;div id=&quot;empty-state&quot; class=&quot;empty-state&quot;&gt;
+    아직 제출된 사전응답이 없습니다.&lt;br&gt;지원자가 사전인터뷰 폼을 제출하면 여기에 표시됩니다.
+  &lt;/div&gt;
+
+  &lt;div id=&quot;panels&quot;&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;script&gt;
+const STORAGE_PREFIX = &quot;dc_prescreen&quot;;
+let candidates = [];
+let activeIndex = 0;
+
+async function loadCandidates(){
+  try{
+    const listResult = await window.storage.list(STORAGE_PREFIX + &quot;:&quot;, true);
+    const keys = (listResult &amp;&amp; listResult.keys) ? listResult.keys : [];
+    const loaded = [];
+    for(const k of keys){
+      try{
+        const r = await window.storage.get(k, true);
+        if(r &amp;&amp; r.value){
+          loaded.push(JSON.parse(r.value));
+        }
+      }catch(e){ /* skip unreadable key */ }
+    }
+    loaded.sort((a,b)=&gt; new Date(b.submittedAt) - new Date(a.submittedAt));
+    candidates = loaded;
+    render();
+  }catch(e){
+    console.error(&#x27;지원자 목록 로드 실패:&#x27;, e);
+    candidates = [];
+    render();
+  }
+}
+
+function render(){
+  document.getElementById(&#x27;cand-count&#x27;).textContent = candidates.length;
+  const emptyState = document.getElementById(&#x27;empty-state&#x27;);
+  const select = document.getElementById(&#x27;candidate-select&#x27;);
+  const panels = document.getElementById(&#x27;panels&#x27;);
+
+  if(candidates.length === 0){
+    emptyState.style.display = &#x27;block&#x27;;
+    select.innerHTML = &#x27;&#x27;;
+    panels.innerHTML = &#x27;&#x27;;
+    return;
+  }
+  emptyState.style.display = &#x27;none&#x27;;
+
+  select.innerHTML = candidates.map((c,i)=&gt;`
+    &lt;div class=&quot;cand-chip ${i===activeIndex?&#x27;active&#x27;:&#x27;&#x27;}&quot; onclick=&quot;selectCandidate(${i})&quot;&gt;
+      ${escapeHtml(c.candidateName || &#x27;이름없음&#x27;)}
+      &lt;span class=&quot;ctime&quot;&gt;${formatDate(c.submittedAt)}&lt;/span&gt;
+    &lt;/div&gt;
+  `).join(&#x27;&#x27;);
+
+  panels.innerHTML = candidates.map((c,i)=&gt; renderPanel(c,i)).join(&#x27;&#x27;);
+}
+
+function selectCandidate(i){ activeIndex = i; render(); }
+
+function escapeHtml(s){
+  return (s||&#x27;&#x27;).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, m=&gt;({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[m]));
+}
+function formatDate(iso){
+  if(!iso) return &#x27;&#x27;;
+  const d = new Date(iso);
+  return d.toLocaleString(&#x27;ko-KR&#x27;, {month:&#x27;numeric&#x27;,day:&#x27;numeric&#x27;,hour:&#x27;2-digit&#x27;,minute:&#x27;2-digit&#x27;});
+}
+
+/* 디테일 부족 판단: 숫자/단위 패턴이 없으면 일반론적 답변으로 간주 */
+function lacksDetail(text){
+  if(!text) return true;
+  const hasNumber = /\d/.test(text);
+  const tooShort = text.trim().length &lt; 15;
+  return tooShort || !hasNumber;
+}
+
+function renderPanel(c, i){
+  const active = i===activeIndex ? &#x27;active&#x27; : &#x27;&#x27;;
+  const flags = [];
+
+  if(lacksDetail(c.decisionBoundary)){
+    flags.push({type:&#x27;warn&#x27;, icon:&#x27;⚠&#x27;, text:&#x27;Q2(의사결정 경계) 응답에 구체적 수치·디테일이 부족합니다. 본인 역할의 경계를 면접에서 직접 확인해보세요.&#x27;});
+  }
+  if(lacksDetail(c.techIssue)){
+    flags.push({type:&#x27;warn&#x27;, icon:&#x27;⚠&#x27;, text:&#x27;Q3(기술적 이슈) 응답에 구체적 수치·현상이 부족합니다. 실제 경험 여부를 검증할 필요가 있습니다.&#x27;});
+  }
+  if(!c.phasesInvolved || c.phasesInvolved.length === 0){
+    flags.push({type:&#x27;info&#x27;, icon:&#x27;ℹ&#x27;, text:&#x27;참여 단계 응답이 없습니다.&#x27;});
+  }else if(c.phasesInvolved.length === 1){
+    flags.push({type:&#x27;info&#x27;, icon:&#x27;ℹ&#x27;, text:`참여 단계가 &quot;${c.phasesInvolved[0]}&quot; 1개로 제한적입니다. 단계별 경험 폭을 확인해보세요.`});
+  }
+
+  return `
+  &lt;div class=&quot;candidate-panel ${active}&quot; data-idx=&quot;${i}&quot;&gt;
+
+    &lt;div class=&quot;profile-bar&quot;&gt;
+      &lt;div&gt;
+        &lt;div class=&quot;pname&quot;&gt;${escapeHtml(c.candidateName)}&lt;/div&gt;
+        &lt;div class=&quot;pmeta&quot;&gt;${escapeHtml(c.candidateEmail)} · 제출 ${formatDate(c.submittedAt)}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;slot-badge&quot; style=&quot;${c.cannotAttend ? &#x27;background:rgba(166,67,44,0.12);border-color:var(--warn);color:var(--warn);&#x27; : &#x27;&#x27;}&quot;&gt;${c.cannotAttend ? &#x27;⚠&#x27; : &#x27;📅&#x27;} ${escapeHtml(c.interviewSlot || &#x27;일정 미선택&#x27;)}&lt;/div&gt;
+    &lt;/div&gt;
+
+    ${flags.length ? `&lt;div class=&quot;flag-bar&quot;&gt;
+      ${flags.map(f=&gt;`&lt;div class=&quot;flag ${f.type}&quot;&gt;&lt;span class=&quot;ficon&quot;&gt;${f.icon}&lt;/span&gt;&lt;span&gt;${f.text}&lt;/span&gt;&lt;/div&gt;`).join(&#x27;&#x27;)}
+    &lt;/div&gt;` : `&lt;div class=&quot;flag-bar&quot;&gt;&lt;div class=&quot;flag info&quot;&gt;&lt;span class=&quot;ficon&quot;&gt;✓&lt;/span&gt;&lt;span&gt;응답에 구체적 디테일이 포함되어 있습니다. 아래 내용을 토대로 심화 질문을 준비해보세요.&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;`}
+
+    &lt;div class=&quot;section-title&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;직무전문성&lt;/div&gt;
+
+    &lt;div class=&quot;qa-card&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q1 · 프로젝트명&lt;/div&gt;
+      &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.project) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;qa-card ${lacksDetail(c.decisionBoundary)?&#x27;short&#x27;:&#x27;&#x27;}&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q2 · 본인 의사결정 vs 상급자·타부서 결정 경계&lt;/div&gt;
+      &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.decisionBoundary) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
+      ${lacksDetail(c.decisionBoundary) ? &#x27;&lt;span class=&quot;tag-lowdetail&quot;&gt;디테일 확인 필요&lt;/span&gt;&#x27; : &#x27;&#x27;}
+    &lt;/div&gt;
+
+    &lt;div class=&quot;qa-card ${lacksDetail(c.techIssue)?&#x27;short&#x27;:&#x27;&#x27;}&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q3 · 기술적 이슈 (수치/현상 포함)&lt;/div&gt;
+      &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.techIssue) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
+      ${lacksDetail(c.techIssue) ? &#x27;&lt;span class=&quot;tag-lowdetail&quot;&gt;디테일 확인 필요&lt;/span&gt;&#x27; : &#x27;&#x27;}
+    &lt;/div&gt;
+
+    &lt;div class=&quot;qa-card&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q4 · 참여 단계&lt;/div&gt;
+      &lt;div class=&quot;chips&quot;&gt;
+        ${(c.phasesInvolved||[]).map(p=&gt;`&lt;span class=&quot;chip-item&quot;&gt;${escapeHtml(p)}&lt;/span&gt;`).join(&#x27;&#x27;) || &#x27;&lt;span class=&quot;qa empty&quot;&gt;미응답&lt;/span&gt;&#x27;}
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;qa-card&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q5 · 무중단 설비교체 시나리오&lt;/div&gt;
+      &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.scenarioMaintenance) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;qa-card&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q6 · 벤더 의견충돌 시 우선순위&lt;/div&gt;
+      &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.scenarioVendorConflict) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;section-title&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt;일하는 방식&lt;/div&gt;
+
+    &lt;div class=&quot;qa-card&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q7 · 선호 리더십 스타일&lt;/div&gt;
+      &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.leadershipPref) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;qa-card&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q8 · 지역근무 우선고려사항&lt;/div&gt;
+      &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.relocationConsideration) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;qa-card&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q9 · 현장 우선순위&lt;/div&gt;
+      &lt;div class=&quot;rank-display&quot;&gt;
+        ${(c.priorityRank||[]).map((p,idx)=&gt;`&lt;div class=&quot;rank-row&quot;&gt;&lt;span class=&quot;rn&quot;&gt;${idx+1}&lt;/span&gt;&lt;span&gt;${escapeHtml(p)}&lt;/span&gt;&lt;/div&gt;`).join(&#x27;&#x27;) || &#x27;&lt;span class=&quot;qa empty&quot;&gt;미응답&lt;/span&gt;&#x27;}
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;qa-card&quot;&gt;
+      &lt;div class=&quot;qlabel&quot;&gt;Q10 · 이직 희망사유&lt;/div&gt;
+      &lt;div class=&quot;qa&quot;&gt;${escapeHtml(c.turnoverReason) || &#x27;&lt;span class=&quot;empty&quot;&gt;미응답&lt;/span&gt;&#x27;}&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;followup-box&quot;&gt;
+      &lt;div class=&quot;ftitle&quot;&gt;면접 시 확인해볼 질문 (자동 제안)&lt;/div&gt;
+      &lt;ul&gt;
+        &lt;li&gt;&quot;${escapeHtml(c.project) || &#x27;해당 프로젝트&#x27;}&quot;에서 본인이 직접 산정하거나 작성한 문서·계산서가 있었나요? 구체적으로 어떤 것이었나요?&lt;/li&gt;
+        &lt;li&gt;적어주신 기술적 이슈가 실제 발생했을 때, 문제를 누가 처음 발견했고 어떤 절차로 보고/해결했나요?&lt;/li&gt;
+        ${c.phasesInvolved &amp;&amp; c.phasesInvolved.length&lt;=1 ? &#x27;&lt;li&gt;설계/구매/시공/시운전/운영 단계 중 응답하신 단계 외에는 경험이 없으신가요, 아니면 간접적으로 관여한 부분이 있나요?&lt;/li&gt;&#x27; : &#x27;&#x27;}
+        &lt;li&gt;본인이 선호하는 리더십 스타일이 실제 이전 직장의 관리 방식과 어떻게 달랐는지 궁금합니다.&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/div&gt;
+
+  &lt;/div&gt;`;
+}
+
+loadCandidates();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+" onload="hideLoading('load-interviewer')"></iframe>
+    </div>
+    <div class="pane" id="pane-hr">
+      <div class="loading" id="load-hr">불러오는 중…</div>
+      <iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+&lt;head&gt;
+
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.__sb = window.supabase.createClient(&quot;https://uawgfckzghdotahrmogu.supabase.co&quot;, &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhd2dmY2t6Z2hkb3RhaHJtb2d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMDIxNDksImV4cCI6MjA5NzY3ODE0OX0.pEiP_r90DzcZHzvJ79awAqCbnZ39bov5H6rznQfgPUM&quot;);
+&lt;/script&gt;
+&lt;style&gt;
+  #dc-login-overlay{
+    position:fixed; inset:0; z-index:9999; background:#0F1B2E;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    font-family:&#x27;Noto Sans KR&#x27;,sans-serif;
+  }
+  #dc-login-card{
+    background:#F7F5F0; border-radius:14px; padding:30px 26px; width:100%; max-width:360px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  }
+  #dc-login-card .ll-eyebrow{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;letter-spacing:.1em;color:#C9A961;margin-bottom:8px;}
+  #dc-login-card h2{font-size:18px;color:#0F1B2E;margin:0 0 4px;}
+  #dc-login-card p.sub{font-size:12.5px;color:#3D5A73;margin:0 0 20px;line-height:1.5;}
+  #dc-login-card label{display:block;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;color:#3D5A73;margin-bottom:6px;}
+  #dc-login-card input{
+    width:100%;border:1.5px solid #D8D2C4;background:#fff;border-radius:9px;
+    padding:12px;font-size:14px;color:#1A2A3D;margin-bottom:14px;box-sizing:border-box;
+  }
+  #dc-login-card input:focus{outline:none;border-color:#0F1B2E;}
+  #dc-login-card button{
+    width:100%;background:#0F1B2E;color:#F7F5F0;border:none;border-radius:9px;
+    padding:14px;font-size:15px;font-weight:700;cursor:pointer;
+  }
+  #dc-login-card button:disabled{opacity:.5;cursor:not-allowed;}
+  #dc-login-err{display:none;color:#A6432C;font-size:12.5px;margin-top:4px;margin-bottom:8px;text-align:center;}
+  #dc-logout-bar{
+    display:none; position:fixed; top:0; right:0; z-index:40; padding:8px 12px;
+  }
+  #dc-logout-bar button{
+    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.3); color:#fff;
+    font-family:&#x27;JetBrains Mono&#x27;,monospace; font-size:11px; border-radius:6px; padding:6px 10px; cursor:pointer;
+  }
+  body.dc-locked{overflow:hidden;}
+&lt;/style&gt;
+&lt;div id=&quot;dc-login-overlay&quot;&gt;
+  &lt;div id=&quot;dc-login-card&quot;&gt;
+    &lt;div class=&quot;ll-eyebrow&quot;&gt;SK BROADBAND · DC ENGINEERING&lt;/div&gt;
+    &lt;h2&gt;HR 대시보드&lt;/h2&gt;
+    &lt;p class=&quot;sub&quot;&gt;담당자 전용 화면입니다. 등록된 직원 계정으로 로그인해주세요.&lt;/p&gt;
+    &lt;label&gt;이메일&lt;/label&gt;
+    &lt;input type=&quot;email&quot; id=&quot;dc-login-email&quot; placeholder=&quot;staff@sk.com&quot; autocomplete=&quot;username&quot;&gt;
+    &lt;label&gt;비밀번호&lt;/label&gt;
+    &lt;input type=&quot;password&quot; id=&quot;dc-login-pw&quot; placeholder=&quot;••••••••&quot; autocomplete=&quot;current-password&quot;&gt;
+    &lt;div id=&quot;dc-login-err&quot;&gt;&lt;/div&gt;
+    &lt;button id=&quot;dc-login-btn&quot;&gt;로그인&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&quot;dc-logout-bar&quot;&gt;&lt;button id=&quot;dc-logout-btn&quot;&gt;로그아웃&lt;/button&gt;&lt;/div&gt;
+&lt;script&gt;
+(function(){
+  const sb = window.__sb;
+  const overlay = document.getElementById(&#x27;dc-login-overlay&#x27;);
+  const bar = document.getElementById(&#x27;dc-logout-bar&#x27;);
+  const btn = document.getElementById(&#x27;dc-login-btn&#x27;);
+  const errEl = document.getElementById(&#x27;dc-login-err&#x27;);
+  document.body.classList.add(&#x27;dc-locked&#x27;);
+
+  function unlock(){
+    overlay.style.display=&#x27;none&#x27;;
+    bar.style.display=&#x27;block&#x27;;
+    document.body.classList.remove(&#x27;dc-locked&#x27;);
+    // existing page code calls loadCandidates() on load; call again now that we&#x27;re authed
+    if(typeof window.loadCandidates === &#x27;function&#x27;){ try{ window.loadCandidates(); }catch(e){} }
+  }
+
+  async function attempt(){
+    const email = document.getElementById(&#x27;dc-login-email&#x27;).value.trim();
+    const pw = document.getElementById(&#x27;dc-login-pw&#x27;).value;
+    if(!email || !pw){ errEl.style.display=&#x27;block&#x27;; errEl.textContent=&#x27;이메일과 비밀번호를 입력해주세요.&#x27;; return; }
+    btn.disabled = true; btn.textContent = &#x27;로그인 중…&#x27;; errEl.style.display=&#x27;none&#x27;;
+    const { error } = await sb.auth.signInWithPassword({ email: email, password: pw });
+    btn.disabled = false; btn.textContent = &#x27;로그인&#x27;;
+    if(error){ errEl.style.display=&#x27;block&#x27;; errEl.textContent=&#x27;로그인 실패: 이메일 또는 비밀번호를 확인해주세요.&#x27;; return; }
+    unlock();
+  }
+
+  btn.addEventListener(&#x27;click&#x27;, attempt);
+  document.getElementById(&#x27;dc-login-pw&#x27;).addEventListener(&#x27;keydown&#x27;, function(e){ if(e.key===&#x27;Enter&#x27;) attempt(); });
+  document.getElementById(&#x27;dc-logout-btn&#x27;).addEventListener(&#x27;click&#x27;, async function(){
+    await sb.auth.signOut();
+    location.reload();
+  });
+
+  // already logged in? (session persists per browser)
+  sb.auth.getSession().then(function(res){
+    if(res &amp;&amp; res.data &amp;&amp; res.data.session){ unlock(); }
+  });
+})();
+&lt;/script&gt;
+
+&lt;script&gt;
+(function(){
+  const PREFIX = &quot;dc_prescreen:&quot;;
+  const _sb = window.__sb;       // shared supabase client (set after login/init)
+  let _cache = {};               // key -&gt; last fetched row (for list+get pairing)
+
+  function stripPrefix(key){ return (key||&#x27;&#x27;).indexOf(PREFIX)===0 ? key.slice(PREFIX.length) : key; }
+  function recordToValue(row){
+    // reconstruct the JSON string the existing code expects
+    const rec = Object.assign({}, row.data || {});
+    rec.status = row.status || rec.status || &#x27;사전질문 제출완료&#x27;;
+    if(row.exec_interview_slot) rec.execInterviewSlot = row.exec_interview_slot;
+    rec._key = PREFIX + row.email;
+    return JSON.stringify(rec);
+  }
+
+  window.storage = {
+    
+      get: async function(key){
+        const email = stripPrefix(key);
+        const { data, error } = await _sb.from(&#x27;candidates&#x27;).select(&#x27;*&#x27;).eq(&#x27;email&#x27;, email).maybeSingle();
+        if(error || !data) return null;
+        return { key: key, value: recordToValue(data), shared: true };
+      },
+      list: async function(prefix){
+        const { data, error } = await _sb.from(&#x27;candidates&#x27;).select(&#x27;*&#x27;).order(&#x27;submitted_at&#x27;, { ascending:false });
+        if(error || !data) return { keys: [], prefix: prefix, shared: true };
+        _cache = {};
+        const keys = data.map(function(row){
+          const k = PREFIX + row.email;
+          _cache[k] = row;
+          return k;
+        });
+        return { keys: keys, prefix: prefix, shared: true };
+      },
+    
+    set: async function(key, value){
+      const email = stripPrefix(key);
+      let rec;
+      try { rec = JSON.parse(value); } catch(e){ rec = {}; }
+      const status = rec.status || &#x27;사전질문 제출완료&#x27;;
+      const execSlot = rec.execInterviewSlot || &#x27;&#x27;;
+      // strip columns we store separately so they don&#x27;t duplicate inside data
+      const dataCopy = Object.assign({}, rec);
+      delete dataCopy._key;
+      const payload = {
+        email: email,
+        data: dataCopy,
+        status: status,
+        exec_interview_slot: execSlot,
+        updated_at: new Date().toISOString()
+      };
+      // upsert on email (insert or overwrite same applicant)
+      const { error } = await _sb.from(&#x27;candidates&#x27;).upsert(payload, { onConflict: &#x27;email&#x27; });
+      if(error){ console.error(&#x27;Supabase set 실패:&#x27;, error); throw error; }
+      return { key: key, value: value, shared: true };
+    },
+    delete: async function(key){
+      const email = stripPrefix(key);
+      const { error } = await _sb.from(&#x27;candidates&#x27;).delete().eq(&#x27;email&#x27;, email);
+      return { key: key, deleted: !error, shared: true };
+    }
+  };
+})();
+&lt;/script&gt;
+
+&lt;meta charset=&quot;UTF-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
+&lt;title&gt;HR 대시보드 — DC전기직무 채용&lt;/title&gt;
+&lt;style&gt;
+  @import url(&#x27;https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Noto+Sans+KR:wght@400;500;600;700&amp;display=swap&#x27;);
+  :root{
+    --navy:#0F1B2E; --cream:#F7F5F0; --slate:#3D5A73; --gold:#C9A961;
+    --ink:#1A2A3D; --line:#D8D2C4; --ok:#2F6F4E; --warn:#A6432C; --card:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:&#x27;Noto Sans KR&#x27;,sans-serif;background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .mono{font-family:&#x27;JetBrains Mono&#x27;,monospace;}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px 20px 60px;}
+
+  .header{background:var(--navy);color:var(--cream);border-radius:12px;padding:22px 24px;margin-bottom:20px;
+    display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;}
+  .header .eyebrow{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;letter-spacing:.1em;color:var(--gold);margin-bottom:8px;}
+  .header h1{font-size:21px;margin:0;}
+  .refresh-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:var(--cream);
+    border-radius:8px;padding:9px 14px;font-size:12.5px;cursor:pointer;font-weight:600;}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--line);
+    border-radius:10px;overflow:hidden;margin-bottom:20px;}
+  .stat-cell{background:var(--card);padding:16px;text-align:center;}
+  .stat-cell .snum{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:24px;font-weight:700;color:var(--navy);}
+  .stat-cell .slabel{font-size:11.5px;color:var(--slate);margin-top:4px;}
+
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .filter-chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .fchip{background:var(--card);border:1.5px solid var(--line);border-radius:7px;padding:7px 12px;
+    font-size:12.5px;cursor:pointer;color:var(--slate);font-weight:600;}
+  .fchip.active{background:var(--navy);color:var(--cream);border-color:var(--navy);}
+
+  .table-wrap{background:var(--card);border:1.5px solid var(--line);border-radius:12px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{background:#EFEAE0;color:var(--navy);font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;
+    letter-spacing:.04em;text-align:left;padding:12px 14px;border-bottom:1.5px solid var(--line);white-space:nowrap;}
+  tbody td{padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:rgba(61,90,115,0.04);}
+  .name-cell{font-weight:700;color:var(--navy);}
+  .email-cell{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11.5px;color:var(--slate);}
+  .slot-cell{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:12px;}
+
+  .status-select{
+    font-family:&#x27;Noto Sans KR&#x27;,sans-serif;font-size:12.5px;font-weight:600;border-radius:6px;
+    padding:6px 10px;border:1.5px solid var(--line);cursor:pointer;background:var(--card);
+  }
+  .status-select[data-status=&quot;사전질문 제출완료&quot;]{color:var(--slate);border-color:var(--slate);}
+  .status-select[data-status=&quot;1차면접 예정&quot;]{color:#8A6A1E;border-color:var(--gold);background:rgba(201,169,97,0.1);}
+  .status-select[data-status=&quot;1차면접 완료&quot;]{color:var(--navy);border-color:var(--navy);background:rgba(15,27,46,0.06);}
+  .status-select[data-status=&quot;임원면접 예정&quot;]{color:#7A3FA0;border-color:#7A3FA0;background:rgba(122,63,160,0.08);}
+  .status-select[data-status=&quot;임원면접 완료&quot;]{color:#4A2D6B;border-color:#4A2D6B;background:rgba(74,45,107,0.08);}
+  .status-select[data-status=&quot;합격&quot;]{color:var(--ok);border-color:var(--ok);background:rgba(47,111,78,0.08);}
+  .status-select[data-status=&quot;불합격&quot;]{color:var(--warn);border-color:var(--warn);background:rgba(166,67,44,0.08);}
+
+  .flag-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;}
+  .flag-dot.warn{background:var(--warn);}
+  .flag-dot.ok{background:var(--ok);}
+
+  .detail-btn{background:none;border:1.5px solid var(--line);border-radius:6px;padding:6px 11px;
+    font-size:12px;cursor:pointer;color:var(--slate);font-weight:600;}
+
+  .empty-row td{text-align:center;color:var(--slate);padding:50px 14px;font-size:14px;}
+
+  /* modal */
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,27,46,0.6);z-index:50;
+    align-items:center;justify-content:center;padding:20px;}
+  .modal-backdrop.active{display:flex;}
+  .modal{background:var(--cream);border-radius:12px;max-width:560px;width:100%;max-height:85vh;overflow-y:auto;padding:26px;}
+  .modal h2{font-size:18px;color:var(--navy);margin:0 0 4px;}
+  .modal .msub{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:12px;color:var(--slate);margin-bottom:18px;}
+  .modal .mqlabel{font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11px;color:var(--gold);font-weight:700;margin:14px 0 4px;}
+  .modal .mqa{font-size:14px;line-height:1.6;color:var(--ink);}
+  .modal-close{position:sticky;top:0;float:right;background:var(--navy);color:var(--cream);border:none;
+    border-radius:6px;padding:7px 12px;font-size:12.5px;cursor:pointer;font-weight:600;}
+
+  @media (max-width:980px) and (min-width:701px){
+    .stat-grid{grid-template-columns:repeat(4,1fr);}
+  }
+  @media (max-width:700px){
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    table{font-size:12.5px;}
+    thead th, tbody td{padding:10px 8px;}
+  }
+  .summary-card{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:16px;}
+  .summary-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .summary-row:last-child{border-bottom:none;}
+  .summary-row .slabel{color:var(--slate);flex-shrink:0;}
+  .summary-row .sval{font-weight:700;color:var(--navy);text-align:right;word-break:break-word;}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;wrap&quot;&gt;
+
+  &lt;div class=&quot;header&quot;&gt;
+    &lt;div&gt;
+      &lt;div class=&quot;eyebrow&quot;&gt;SK BROADBAND · DC ENGINEERING&lt;/div&gt;
+      &lt;h1&gt;HR 대시보드 — 전형상태 / 면접일정&lt;/h1&gt;
+    &lt;/div&gt;
+    &lt;div style=&quot;display:flex;gap:8px;&quot;&gt;
+      &lt;button class=&quot;refresh-btn&quot; style=&quot;background:var(--gold);border-color:var(--gold);color:var(--navy);font-weight:700;&quot; onclick=&quot;openPasteModal()&quot;&gt;✉ 메일 붙여넣어 등록&lt;/button&gt;
+      &lt;button class=&quot;refresh-btn&quot; onclick=&quot;loadCandidates()&quot;&gt;⟳ 새로고침&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;stat-grid&quot; id=&quot;stat-grid&quot;&gt;&lt;/div&gt;
+
+  &lt;div class=&quot;toolbar&quot;&gt;
+    &lt;div class=&quot;filter-chips&quot; id=&quot;filter-chips&quot;&gt;&lt;/div&gt;
+    &lt;span class=&quot;mono&quot; style=&quot;font-size:12px;color:var(--slate);&quot;&gt;전체 &lt;span id=&quot;total-count&quot;&gt;0&lt;/span&gt;명&lt;/span&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;table-wrap&quot;&gt;
+    &lt;table&gt;
+      &lt;thead&gt;
+        &lt;tr&gt;
+          &lt;th&gt;지원자&lt;/th&gt;
+          &lt;th&gt;이메일&lt;/th&gt;
+          &lt;th&gt;제출일시&lt;/th&gt;
+          &lt;th&gt;1차 면접 일정&lt;/th&gt;
+          &lt;th&gt;임원면접 일정&lt;/th&gt;
+          &lt;th&gt;확인필요&lt;/th&gt;
+          &lt;th&gt;전형상태&lt;/th&gt;
+          &lt;th&gt;&lt;/th&gt;
+        &lt;/tr&gt;
+      &lt;/thead&gt;
+      &lt;tbody id=&quot;table-body&quot;&gt;
+        &lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;8&quot;&gt;아직 제출된 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;div class=&quot;modal-backdrop&quot; id=&quot;modal-backdrop&quot; onclick=&quot;if(event.target===this) closeModal()&quot;&gt;
+  &lt;div class=&quot;modal&quot; id=&quot;modal-content&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+const STORAGE_PREFIX = &quot;dc_prescreen&quot;;
+const STATUS_OPTIONS = [&quot;사전질문 제출완료&quot;,&quot;1차면접 예정&quot;,&quot;1차면접 완료&quot;,&quot;임원면접 예정&quot;,&quot;임원면접 완료&quot;,&quot;합격&quot;,&quot;불합격&quot;];
+let candidates = [];
+let activeFilter = &quot;전체&quot;;
+
+function escapeHtml(s){
+  return (s||&#x27;&#x27;).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, m=&gt;({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[m]));
+}
+function formatDate(iso){
+  if(!iso) return &#x27;—&#x27;;
+  return new Date(iso).toLocaleString(&#x27;ko-KR&#x27;,{month:&#x27;numeric&#x27;,day:&#x27;numeric&#x27;,hour:&#x27;2-digit&#x27;,minute:&#x27;2-digit&#x27;});
+}
+function lacksDetail(text){
+  if(!text) return true;
+  return text.trim().length &lt; 15 || !/\d/.test(text);
+}
+
+async function loadCandidates(){
+  try{
+    const listResult = await window.storage.list(STORAGE_PREFIX + &quot;:&quot;, true);
+    const keys = (listResult &amp;&amp; listResult.keys) ? listResult.keys : [];
+    const loaded = [];
+    for(const k of keys){
+      try{
+        const r = await window.storage.get(k, true);
+        if(r &amp;&amp; r.value){
+          const rec = JSON.parse(r.value);
+          rec._key = k;
+          if(!rec.status) rec.status = &quot;사전질문 제출완료&quot;;
+          loaded.push(rec);
+        }
+      }catch(e){ /* skip */ }
+    }
+    loaded.sort((a,b)=&gt; new Date(b.submittedAt) - new Date(a.submittedAt));
+    candidates = loaded;
+    render();
+  }catch(e){
+    console.error(&#x27;지원자 목록 로드 실패:&#x27;, e);
+    candidates = [];
+    render();
+  }
+}
+
+async function updateStatus(key, newStatus){
+  const c = candidates.find(x=&gt;x._key===key);
+  if(!c) return;
+  c.status = newStatus;
+  try{
+    await window.storage.set(key, JSON.stringify(c), true);
+  }catch(e){
+    console.error(&#x27;상태 저장 실패:&#x27;, e);
+  }
+  render();
+}
+
+async function updateExecSlot(key, value){
+  const c = candidates.find(x=&gt;x._key===key);
+  if(!c) return;
+  c.execInterviewSlot = value.trim();
+  try{
+    await window.storage.set(key, JSON.stringify(c), true);
+  }catch(e){
+    console.error(&#x27;임원면접 일정 저장 실패:&#x27;, e);
+  }
+  // re-render는 생략 (입력창 포커스 유지를 위해), 데이터는 이미 반영됨
+}
+
+function renderStats(){
+  const counts = {};
+  STATUS_OPTIONS.forEach(s=&gt;counts[s]=0);
+  candidates.forEach(c=&gt;{ counts[c.status] = (counts[c.status]||0) + 1; });
+  const grid = document.getElementById(&#x27;stat-grid&#x27;);
+  grid.innerHTML = `
+    &lt;div class=&quot;stat-cell&quot;&gt;&lt;div class=&quot;snum&quot;&gt;${candidates.length}&lt;/div&gt;&lt;div class=&quot;slabel&quot;&gt;전체 지원자&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;stat-cell&quot;&gt;&lt;div class=&quot;snum&quot;&gt;${counts[&quot;1차면접 예정&quot;]||0}&lt;/div&gt;&lt;div class=&quot;slabel&quot;&gt;1차면접 예정&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;stat-cell&quot;&gt;&lt;div class=&quot;snum&quot;&gt;${counts[&quot;1차면접 완료&quot;]||0}&lt;/div&gt;&lt;div class=&quot;slabel&quot;&gt;1차면접 완료&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;stat-cell&quot;&gt;&lt;div class=&quot;snum&quot;&gt;${counts[&quot;임원면접 예정&quot;]||0}&lt;/div&gt;&lt;div class=&quot;slabel&quot;&gt;임원면접 예정&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;stat-cell&quot;&gt;&lt;div class=&quot;snum&quot;&gt;${counts[&quot;임원면접 완료&quot;]||0}&lt;/div&gt;&lt;div class=&quot;slabel&quot;&gt;임원면접 완료&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;stat-cell&quot;&gt;&lt;div class=&quot;snum&quot;&gt;${counts[&quot;합격&quot;]||0}&lt;/div&gt;&lt;div class=&quot;slabel&quot;&gt;합격&lt;/div&gt;&lt;/div&gt;
+    &lt;div class=&quot;stat-cell&quot;&gt;&lt;div class=&quot;snum&quot;&gt;${counts[&quot;불합격&quot;]||0}&lt;/div&gt;&lt;div class=&quot;slabel&quot;&gt;불합격&lt;/div&gt;&lt;/div&gt;
+  `;
+}
+
+function renderFilters(){
+  const opts = [&quot;전체&quot;, ...STATUS_OPTIONS];
+  document.getElementById(&#x27;filter-chips&#x27;).innerHTML = opts.map(o=&gt;`
+    &lt;div class=&quot;fchip ${o===activeFilter?&#x27;active&#x27;:&#x27;&#x27;}&quot; onclick=&quot;setFilter(&#x27;${o}&#x27;)&quot;&gt;${o}&lt;/div&gt;
+  `).join(&#x27;&#x27;);
+}
+function setFilter(f){ activeFilter = f; render(); }
+
+function renderTable(){
+  const tbody = document.getElementById(&#x27;table-body&#x27;);
+  const filtered = activeFilter===&quot;전체&quot; ? candidates : candidates.filter(c=&gt;c.status===activeFilter);
+  document.getElementById(&#x27;total-count&#x27;).textContent = candidates.length;
+
+  if(filtered.length===0){
+    tbody.innerHTML = `&lt;tr class=&quot;empty-row&quot;&gt;&lt;td colspan=&quot;8&quot;&gt;표시할 지원자가 없습니다.&lt;/td&gt;&lt;/tr&gt;`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(c=&gt;{
+    const needsCheck = lacksDetail(c.decisionBoundary) || lacksDetail(c.techIssue);
+    return `
+    &lt;tr&gt;
+      &lt;td class=&quot;name-cell&quot;&gt;${escapeHtml(c.candidateName)}&lt;/td&gt;
+      &lt;td class=&quot;email-cell&quot;&gt;${escapeHtml(c.candidateEmail)}&lt;/td&gt;
+      &lt;td class=&quot;mono&quot; style=&quot;font-size:12px;color:var(--slate);&quot;&gt;${formatDate(c.submittedAt)}&lt;/td&gt;
+      &lt;td class=&quot;slot-cell&quot; style=&quot;${c.cannotAttend ? &#x27;color:var(--warn);font-weight:700;&#x27; : &#x27;&#x27;}&quot;&gt;${c.cannotAttend ? &#x27;⚠ &#x27; : &#x27;&#x27;}${escapeHtml(c.interviewSlot) || &#x27;미선택&#x27;}&lt;/td&gt;
+      &lt;td&gt;
+        &lt;input type=&quot;text&quot; class=&quot;exec-slot-input&quot; value=&quot;${escapeHtml(c.execInterviewSlot||&#x27;&#x27;)}&quot; placeholder=&quot;예: 6/30(화) 14:00&quot;
+          style=&quot;width:130px;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:11.5px;padding:6px 8px;border:1.5px solid var(--line);border-radius:6px;&quot;
+          onblur=&quot;updateExecSlot(&#x27;${c._key}&#x27;, this.value)&quot;&gt;
+      &lt;/td&gt;
+      &lt;td&gt;${needsCheck ? &#x27;&lt;span class=&quot;flag-dot warn&quot;&gt;&lt;/span&gt;디테일 확인&#x27; : &#x27;&lt;span class=&quot;flag-dot ok&quot;&gt;&lt;/span&gt;양호&#x27;}&lt;/td&gt;
+      &lt;td&gt;
+        &lt;select class=&quot;status-select&quot; data-status=&quot;${c.status}&quot; onchange=&quot;updateStatus(&#x27;${c._key}&#x27;, this.value)&quot;&gt;
+          ${STATUS_OPTIONS.map(s=&gt;`&lt;option value=&quot;${s}&quot; ${s===c.status?&#x27;selected&#x27;:&#x27;&#x27;}&gt;${s}&lt;/option&gt;`).join(&#x27;&#x27;)}
+        &lt;/select&gt;
+      &lt;/td&gt;
+      &lt;td&gt;&lt;button class=&quot;detail-btn&quot; onclick=&quot;openModal(&#x27;${c._key}&#x27;)&quot;&gt;응답보기&lt;/button&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+  `;
+  }).join(&#x27;&#x27;);
+}
+
+function render(){
+  renderStats();
+  renderFilters();
+  renderTable();
+}
+
+function openModal(key){
+  const c = candidates.find(x=&gt;x._key===key);
+  if(!c) return;
+  const m = document.getElementById(&#x27;modal-content&#x27;);
+  m.innerHTML = `
+    &lt;button class=&quot;modal-close&quot; onclick=&quot;closeModal()&quot;&gt;닫기&lt;/button&gt;
+    &lt;h2&gt;${escapeHtml(c.candidateName)}&lt;/h2&gt;
+    &lt;div class=&quot;msub&quot;&gt;${escapeHtml(c.candidateEmail)} · 제출 ${formatDate(c.submittedAt)} · 1차면접 ${escapeHtml(c.interviewSlot)||&#x27;미선택&#x27;}${c.execInterviewSlot ? &#x27; · 임원면접 &#x27;+escapeHtml(c.execInterviewSlot) : &#x27;&#x27;}&lt;/div&gt;
+
+    &lt;div class=&quot;mqlabel&quot;&gt;Q1 · 프로젝트명&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.project)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q2 · 의사결정 경계&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.decisionBoundary)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q3 · 기술적 이슈&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.techIssue)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q4 · 참여 단계&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${(c.phasesInvolved||[]).join(&#x27;, &#x27;)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q5 · 무중단작업 시나리오&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.scenarioMaintenance)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q6 · 벤더 의견충돌 우선순위&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.scenarioVendorConflict)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q7 · 선호 리더십 스타일&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.leadershipPref)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q8 · 지역근무 우선고려사항&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.relocationConsideration)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q9 · 현장 우선순위&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${(c.priorityRank||[]).join(&#x27; &gt; &#x27;)||&#x27;미응답&#x27;}&lt;/div&gt;
+    &lt;div class=&quot;mqlabel&quot;&gt;Q10 · 이직 희망사유&lt;/div&gt;&lt;div class=&quot;mqa&quot;&gt;${escapeHtml(c.turnoverReason)||&#x27;미응답&#x27;}&lt;/div&gt;
+  `;
+  document.getElementById(&#x27;modal-backdrop&#x27;).classList.add(&#x27;active&#x27;);
+}
+function closeModal(){
+  document.getElementById(&#x27;modal-backdrop&#x27;).classList.remove(&#x27;active&#x27;);
+}
+
+/* ============ 메일 본문 붙여넣기 → 파싱 → 등록 ============ */
+function openPasteModal(){
+  const m = document.getElementById(&#x27;modal-content&#x27;);
+  m.innerHTML = `
+    &lt;button class=&quot;modal-close&quot; onclick=&quot;closeModal()&quot;&gt;닫기&lt;/button&gt;
+    &lt;h2&gt;메일 본문 붙여넣어 등록&lt;/h2&gt;
+    &lt;div class=&quot;msub&quot;&gt;지원자가 보낸 메일의 본문 전체를 그대로 복사해서 아래에 붙여넣어주세요.&lt;/div&gt;
+    &lt;textarea id=&quot;paste-textarea&quot; rows=&quot;14&quot; style=&quot;width:100%;font-family:&#x27;JetBrains Mono&#x27;,monospace;font-size:12.5px;
+      border:1.5px solid var(--line);border-radius:8px;padding:12px;box-sizing:border-box;resize:vertical;&quot;
+      placeholder=&quot;지원자: 홍길동 (hong@email.com)&amp;#10;제출시각: 2026. 6. 22. 오후 3:00:00&amp;#10;&amp;#10;[1차 면접 희망 일정] ...&amp;#10;&amp;#10;--- 직무전문성 ---&amp;#10;Q1. 프로젝트명: ...&amp;#10;(이하 메일 본문 전체를 붙여넣어주세요)&quot;&gt;&lt;/textarea&gt;
+    &lt;div id=&quot;paste-error&quot; style=&quot;display:none;color:var(--warn);font-size:12.5px;margin-top:8px;&quot;&gt;&lt;/div&gt;
+    &lt;div id=&quot;paste-preview&quot; style=&quot;margin-top:14px;&quot;&gt;&lt;/div&gt;
+    &lt;button class=&quot;detail-btn&quot; style=&quot;width:100%;margin-top:14px;background:var(--navy);color:var(--cream);border:none;padding:11px;font-size:13.5px;&quot;
+      onclick=&quot;previewPastedEmail()&quot;&gt;미리보기 확인&lt;/button&gt;
+  `;
+  document.getElementById(&#x27;modal-backdrop&#x27;).classList.add(&#x27;active&#x27;);
+}
+
+function parseEmailBody(text){
+  const get = (regex) =&gt; {
+    const m = text.match(regex);
+    return m ? m[1].trim() : &#x27;&#x27;;
+  };
+  const candidateLine = get(/지원자:\s*(.+)/);
+  let candidateName = candidateLine, candidateEmail = &#x27;&#x27;;
+  const emailMatch = candidateLine.match(/^(.*?)\s*\((.+@.+)\)\s*$/);
+  if(emailMatch){
+    candidateName = emailMatch[1].trim();
+    candidateEmail = emailMatch[2].trim();
+  }
+
+  const submittedRaw = get(/제출시각:\s*(.+)/);
+  const slot = get(/\[1차 면접 희망 일정\]\s*(.+)/);
+  const project = get(/Q1\.\s*프로젝트명:\s*(.+)/);
+  const decisionBoundary = get(/Q2\.\s*의사결정 경계:\s*(.+)/);
+  const techIssue = get(/Q3\.\s*기술적 이슈:\s*(.+)/);
+  const phasesRaw = get(/Q4\.\s*참여 단계:\s*(.+)/);
+  const scenarioMaintenance = get(/Q5\.\s*무중단작업 시나리오:\s*(.+)/);
+  const scenarioVendorConflict = get(/Q6\.\s*벤더 의견충돌 우선순위:\s*(.+)/);
+  const leadershipPref = get(/Q7\.\s*선호 리더십 스타일:\s*(.+)/);
+  const relocationConsideration = get(/Q8\.\s*지역근무 우선고려사항:\s*(.+)/);
+  const priorityRaw = get(/Q9\.\s*현장 우선순위:\s*(.+)/);
+  const turnoverReason = get(/Q10\.\s*이직 희망사유:\s*(.+)/);
+
+  const cannotAttend = /참여 불가|별도 조율/.test(slot);
+
+  return {
+    candidateName, candidateEmail,
+    submittedAt: new Date().toISOString(), // 붙여넣은 시점 기준 (원본 제출시각은 표시용으로만 별도 보관)
+    originalSubmittedAtText: submittedRaw,
+    project, decisionBoundary, techIssue,
+    phasesInvolved: phasesRaw ? phasesRaw.split(&#x27;,&#x27;).map(s=&gt;s.trim()).filter(Boolean) : [],
+    scenarioMaintenance, scenarioVendorConflict, leadershipPref, relocationConsideration,
+    turnoverReason,
+    priorityRank: priorityRaw ? priorityRaw.split(&#x27;&gt;&#x27;).map(s=&gt;s.trim()).filter(Boolean) : [],
+    cannotAttend,
+    interviewSlot: slot,
+    status: &#x27;사전질문 제출완료&#x27;
+  };
+}
+
+function previewPastedEmail(){
+  const text = document.getElementById(&#x27;paste-textarea&#x27;).value;
+  const errEl = document.getElementById(&#x27;paste-error&#x27;);
+  const previewEl = document.getElementById(&#x27;paste-preview&#x27;);
+
+  if(!text.trim()){
+    errEl.style.display=&#x27;block&#x27;;
+    errEl.textContent = &#x27;붙여넣을 메일 본문이 없습니다.&#x27;;
+    previewEl.innerHTML = &#x27;&#x27;;
+    window._pendingPasteRecord = null;
+    return;
+  }
+
+  const rec = parseEmailBody(text);
+
+  if(!rec.candidateName || !rec.candidateEmail){
+    errEl.style.display=&#x27;block&#x27;;
+    errEl.textContent = &#x27;지원자 이름/이메일을 인식하지 못했습니다. &quot;지원자: 이름 (이메일)&quot; 줄이 포함되어 있는지 확인해주세요.&#x27;;
+    previewEl.innerHTML = &#x27;&#x27;;
+    window._pendingPasteRecord = null;
+    return;
+  }
+  errEl.style.display=&#x27;none&#x27;;
+
+  // JSON을 HTML 속성에 직접 넣으면 괄호/슬래시 등 특수문자로 깨질 수 있어 전역변수에 보관
+  window._pendingPasteRecord = rec;
+
+  previewEl.innerHTML = `
+    &lt;div class=&quot;summary-card&quot; style=&quot;margin-bottom:0;&quot;&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;지원자&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.candidateName)}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;이메일&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.candidateEmail)}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;1차 면접 일정&lt;/span&gt;&lt;span class=&quot;sval&quot; style=&quot;text-align:right;max-width:280px;&quot;&gt;${escapeHtml(rec.interviewSlot)||&#x27;미선택&#x27;}&lt;/span&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;summary-card&quot; style=&quot;margin-top:10px;margin-bottom:0;&quot;&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q1 프로젝트명&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.project)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q2 의사결정 경계&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.decisionBoundary)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q3 기술적 이슈&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.techIssue)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q4 참여 단계&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${(rec.phasesInvolved||[]).join(&#x27;, &#x27;)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q5 무중단작업 시나리오&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.scenarioMaintenance)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q6 벤더 의견충돌 우선순위&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.scenarioVendorConflict)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q7 선호 리더십 스타일&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.leadershipPref)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q8 지역근무 우선고려사항&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.relocationConsideration)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q9 현장 우선순위&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${(rec.priorityRank||[]).join(&#x27; &gt; &#x27;)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;summary-row&quot;&gt;&lt;span class=&quot;slabel&quot;&gt;Q10 이직 희망사유&lt;/span&gt;&lt;span class=&quot;sval&quot;&gt;${escapeHtml(rec.turnoverReason)||&#x27;-&#x27;}&lt;/span&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;button class=&quot;detail-btn&quot; style=&quot;width:100%;margin-top:12px;background:var(--ok);color:white;border:none;padding:11px;font-size:13.5px;&quot;
+      onclick=&quot;registerPastedCandidate()&quot;&gt;이 내용으로 등록하기&lt;/button&gt;
+  `;
+}
+
+async function registerPastedCandidate(){
+  const rec = window._pendingPasteRecord;
+  if(!rec){
+    alert(&#x27;등록할 데이터가 없습니다. 미리보기를 다시 확인해주세요.&#x27;);
+    return;
+  }
+  try{
+    const key = `${STORAGE_PREFIX}:${rec.candidateEmail || rec.candidateName}`;
+    await window.storage.set(key, JSON.stringify(rec), true);
+    window._pendingPasteRecord = null;
+    closeModal();
+    await loadCandidates();
+  }catch(e){
+    console.error(&#x27;등록 실패:&#x27;, e);
+    alert(&#x27;등록 중 오류가 발생했습니다: &#x27; + (e &amp;&amp; e.message ? e.message : &#x27;알 수 없는 오류&#x27;) + &#x27;\n다시 시도해주세요.&#x27;);
+  }
+}
+
+loadCandidates();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+" onload="hideLoading('load-hr')"></iframe>
+    </div>
+  </div>
+
+  <div class="tabs-mobile" id="tabs-mobile">
+    <div class="tabm active" data-target="applicant"><span class="ticon">📝</span>지원자</div>
+    <div class="tabm" data-target="interviewer"><span class="ticon">🗂️</span>면접관</div>
+    <div class="tabm" data-target="hr"><span class="ticon">📊</span>HR</div>
+  </div>
+
+<script>
+function hideLoading(id){
+  const el = document.getElementById(id);
+  if(el) el.classList.add('hidden');
+}
+
+function switchTab(target){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+target).classList.add('active');
+
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.target===target));
+  document.querySelectorAll('.tabm').forEach(t=>t.classList.toggle('active', t.dataset.target===target));
+}
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>switchTab(t.dataset.target));
+});
+document.querySelectorAll('.tabm').forEach(t=>{
+  t.addEventListener('click', ()=>switchTab(t.dataset.target));
+});
+</script>
+
+
+<style>
+  /* 기본: 직원 탭 숨김 (지원자에게는 지원자 탭만 보임) */
+  body:not(.staff-mode) .tab[data-target="interviewer"],
+  body:not(.staff-mode) .tab[data-target="hr"],
+  body:not(.staff-mode) .tabm[data-target="interviewer"],
+  body:not(.staff-mode) .tabm[data-target="hr"]{
+    display:none !important;
+  }
+</style>
+<script>
+(function(){
+  var STAFF_HASH = "#staff";   // 직원용 링크 표시 (예: .../index.html#staff)
+  function isStaff(){ return (location.hash || "").toLowerCase() === STAFF_HASH; }
+
+  function applyMode(){
+    if(isStaff()){
+      document.body.classList.add("staff-mode");
+    }else{
+      document.body.classList.remove("staff-mode");
+      // 혹시 직원 탭이 활성화된 상태라면 지원자 탭으로 되돌림
+      var ap = document.getElementById("pane-applicant");
+      if(ap && !ap.classList.contains("active")){
+        if(typeof switchTab === "function"){ try{ switchTab("applicant"); }catch(e){} }
+      }
+    }
+  }
+  // 해시 변경(직원이 #staff 추가/제거) 즉시 반영
+  window.addEventListener("hashchange", applyMode);
+  document.addEventListener("DOMContentLoaded", applyMode);
+  applyMode();
+})();
+</script>
+
+</body>
+</html>
